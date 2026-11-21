@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist</title>
+<style>
+  :root { --bg:#050505; --s1:#101010; --s2:#181818; --line:#ffffff14; --line2:#ffffff26; --t1:#f2f2f2; --t2:#a8a8a8; --t3:#6b6b6b;
+    --brand:#3B6BFF; --ok:#3dd68c; --warn:#f5b942; --r:14px; --strike:#ffffff30; color-scheme: dark; }
+  :root[data-tema="claro"] { --bg:#f4f5f7; --s1:#ffffff; --s2:#eef0f3; --line:#0000001a; --line2:#00000030; --t1:#111318; --t2:#4b5160; --t3:#8a909c;
+    --brand:#2557e8; --ok:#16a34a; --warn:#d97706; --strike:#00000040; color-scheme: light; }
+  body, section, .it, .note { transition: background 250ms, color 250ms, border-color 250ms; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--t1); font: 14px/1.5 "Segoe UI", system-ui, sans-serif; padding: 20px 16px 60px; }
+  .wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 18px; font-weight: 700; }
+  .pct { font-variant-numeric: tabular-nums; color: var(--t2); margin-left: auto; }
+  .bar { height: 6px; border-radius: 99px; background: var(--s2); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), #011142); transition: width 500ms cubic-bezier(.2,.8,.2,1); }
+  .filters { display: flex; gap: 6px; }
+  .filters button { all: unset; cursor: pointer; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--t2); font-size: 12px; transition: background 150ms, color 150ms; }
+  .filters button.on { background: var(--brand); color: #fff; border-color: transparent; }
+  section { background: var(--s1); border: 1px solid var(--line); border-radius: 18px; padding: 12px; animation: rise 400ms cubic-bezier(.2,.8,.2,1) backwards; }
+  section h2 { font-size: 16px; font-weight: 800; color: var(--t1); padding: 4px 8px 10px; display: flex; gap: 8px; align-items: baseline; }
+  section h2 span { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 600; color: var(--t3); }
+  section h2 span.meio { color: var(--warn); }
+  .it { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: start; padding: 8px; border-radius: var(--r); transition: background 150ms; }
+  .it:hover { background: var(--s2); }
+  .ck { all: unset; cursor: pointer; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--line2); display: grid; place-items: center; margin-top: 1px; transition: background 200ms, border-color 200ms, transform 150ms; }
+  .ck:hover { transform: scale(1.1); border-color: var(--brand); }
+  .ck svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3; fill: none; stroke-dasharray: 20; stroke-dashoffset: 20; transition: stroke-dashoffset 260ms ease-out; }
+  .it.done .ck { background: var(--ok); border-color: var(--ok); }
+  .it.done .ck svg { stroke-dashoffset: 0; }
+  .it.done .tx { color: var(--t3); text-decoration: line-through; text-decoration-color: var(--strike); }
+  .it.meio .ck { background: var(--warn); border-color: var(--warn); }
+  .it.meio .ck::after { content: ""; width: 10px; height: 3px; border-radius: 2px; background: #fff; }
+  .it.meio .ck svg { display: none; }
+  .it.meio .tx { color: var(--t1); }
+  .it.atual { background: color-mix(in srgb, var(--brand) 12%, transparent); box-shadow: inset 3px 0 0 var(--brand); }
+  .it.atual .tx { color: var(--t1); font-weight: 600; }
+  .ir { all: unset; cursor: pointer; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--t2); font-size: 12px; }
+  .ir:hover { color: var(--t1); border-color: var(--brand); }
+  .leg { display: flex; gap: 12px; color: var(--t3); font-size: 12px; flex-wrap: wrap; }
+  .leg b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .tema { all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 10px; border: 1px solid var(--line2); display: grid; place-items: center; color: var(--t2); transition: transform 150ms, color 150ms; }
+  .tema:hover { transform: scale(1.08) rotate(-12deg); color: var(--t1); }
+  .tema svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .it.flash { animation: flash 900ms ease-out; }
+  .tx { word-break: break-word; }
+  .cbtn { all: unset; cursor: pointer; color: var(--t3); font-size: 12px; padding: 2px 8px; border-radius: 8px; border: 1px solid transparent; transition: color 150ms, border-color 150ms; white-space: nowrap; }
+  .cbtn:hover { color: var(--t1); border-color: var(--line2); }
+  .cbtn.has { color: var(--warn); }
+  .notes { grid-column: 2 / 4; display: grid; gap: 6px; }
+  .note { background: var(--s2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; animation: rise 300ms ease-out backwards; }
+  .note .q { color: var(--t1); white-space: pre-wrap; }
+  .note .a { color: var(--brand); margin-top: 4px; white-space: pre-wrap; }
+  .note .w { color: var(--t3); font-size: 11px; }
+  .note.ok { opacity: .55; }
+  .ask { display: flex; gap: 6px; }
+  .ask textarea { flex: 1; resize: vertical; min-height: 38px; background: var(--bg); color: var(--t1); border: 1px solid var(--line2); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; outline: none; }
+  .ask textarea:focus { border-color: var(--brand); }
+  .ask button { all: unset; cursor: pointer; padding: 0 14px; border-radius: 10px; background: var(--brand); color: #fff; font-weight: 600; font-size: 13px; }
+  .ds { display: grid; gap: 14px; }
+  .ds section h2 span { color: var(--t3); }
+  .ds p, .ds li { color: var(--t2); font-size: 13px; }
+  .ds ul { padding-left: 18px; display: grid; gap: 4px; }
+  .ds li b, .ds p b { color: var(--t1); }
+  .sws { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 8px 10px; }
+  .sw { display: grid; gap: 6px; justify-items: center; font-size: 11px; color: var(--t2); font-variant-numeric: tabular-nums; cursor: pointer; }
+  .sw i { width: 54px; height: 54px; border-radius: 14px; border: 1px solid var(--line2); transition: transform 150ms; }
+  .sw:hover i { transform: scale(1.08); }
+  .grad { height: 40px; margin: 0 8px 10px; border-radius: 12px; border: 1px solid var(--line); }
+  .fonts { display: grid; gap: 8px; padding: 4px 8px 10px; }
+  .fonts div { display: flex; align-items: baseline; gap: 12px; }
+  .fonts big { font-size: 24px; color: var(--t1); }
+  .fonts small { color: var(--t3); font-size: 12px; }
+  .rads { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 8px 10px; }
+  .rads div { display: grid; gap: 6px; justify-items: center; font-size: 11px; color: var(--t2); }
+  .rads i { width: 64px; height: 44px; border: 1.5px solid var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent); }
+  .rules { padding: 0 8px 8px; }
+  .conc { display: flex; gap: 16px; flex-wrap: wrap; padding: 4px 8px 12px; }
+  .conc > div { display: grid; gap: 6px; justify-items: center; font-size: 11px; color: var(--t2); }
+  .conc .out { border: 1.5px solid var(--brand); background: color-mix(in srgb, var(--brand) 8%, transparent); }
+  .conc .in { width: 100%; height: 100%; background: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .vazio { color: var(--t3); text-align: center; padding: 40px 0; }
+  .toast { position: fixed; bottom: 16px; left: 50%; translate: -50% 0; background: var(--s2); border: 1px solid var(--line2); padding: 8px 14px; border-radius: 12px; opacity: 0; transition: opacity 200ms; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes flash { 0% { background: #3dd68c33; } 100% { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="nome">Checklist</h1>
+    <div class="filters" id="filtros">
+      <button data-f="todos" class="on">Todos</button><button data-f="falta">Falta</button><button data-f="feitos">Feitos</button><button data-f="design">Design</button><button data-f="futuro">Futuro</button>
+    </div>
+    <span class="pct" id="pct"></span>
+    <button class="ir" id="ir">Atual</button>
+    <button class="tema" id="tema" aria-label="Tema"></button>
+  </header>
+  <div class="leg"><span><b style="background:var(--ok)"></b>feito</span><span><b style="background:var(--warn)"></b>pela metade · clique de novo</span><span><b style="border:1.5px solid var(--line2)"></b>falta</span></div>
+  <div class="bar"><i id="barra" style="width:0"></i></div>
+  <div id="lista"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  const SOL = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const LUA = '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  const tema = (t) => { document.documentElement.dataset.tema = t; document.querySelector("#tema").innerHTML = t === "claro" ? LUA : SOL; try { localStorage.setItem("ck.tema", t); } catch {} };
+  let atualAntes = null;
+  const irAtual = (suave = true) => document.querySelector(".it.atual")?.scrollIntoView({ behavior: suave ? "smooth" : "auto", block: "center" });
+  let estado = null, filtro = "todos", aberto = null, antes = {};
+  const $ = (s) => document.querySelector(s);
+  const toast = (t) => { const e = $("#toast"); e.textContent = t; e.classList.add("on"); setTimeout(() => e.classList.remove("on"), 1800); };
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then((r) => { if (!r.ok) throw r; });
+
+  async function carregar() {
+    try {
+      const e = await (await fetch("/estado")).json();
+      const novo = JSON.stringify(e);
+      if (novo === JSON.stringify(estado)) return;
+      estado = e; desenhar();
+    } catch { /* servidor fora do ar */ }
+  }
+
+  /* ── aba Design: lê design/REGRAS.md (skill design-sistema) e desenha cores, fontes e cantos ── */
+  let designTxt = null;
+  async function carregarDesign() { try { designTxt = (await (await fetch("/design")).json()).texto; } catch { designTxt = ""; } }
+  const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<b>$1</b>");
+  function desenharDesign() {
+    if (!designTxt) { $("#lista").innerHTML = `<div class="vazio">Sem design/REGRAS.md neste projeto</div>`; return; }
+    const secs = []; let cur = null;
+    for (const l of designTxt.split(/\r?\n/)) {
+      if (/^##\s/.test(l)) { cur = { t: l.replace(/^#+\s*/, ""), linhas: [] }; secs.push(cur); }
+      else if (cur && l.trim()) cur.linhas.push(l);
+    }
+    let html = '<div class="ds">';
+    secs.forEach((s, si) => {
+      const txt = s.linhas.join("\n");
+      const hexes = [...new Set((txt.match(/#[0-9a-fA-F]{6}\b|#[0-9a-fA-F]{3}\b/g) ?? []).map((h) => h.toUpperCase()))];
+      const fonts = [...new Set([...txt.matchAll(/\*\*([A-Z][\w ]{2,30}?)\*\*\s+(?:para|for|nos|em)\b/g)].map((m) => m[1].trim()))];
+      const forma = /forma|canto|borda|radius|arredond/i.test(s.t);
+      const rads = forma ? [...txt.matchAll(/([A-Za-zÀ-ú\/]+(?:\s[A-Za-zÀ-ú\/]+)?)\s+(\d{1,2})\b/g)].map((m) => [m[1].trim(), +m[2]]).filter(([, n]) => n <= 40).slice(0, 8) : [];
+      html += `<section style="animation-delay:${si * 40}ms"><h2>${esc(s.t)}</h2>`;
+      if (hexes.length) {
+        html += `<div class="sws">${hexes.map((h) => `<span class="sw" data-hex="${h}"><i style="background:${h}"></i>${h}</span>`).join("")}</div>`;
+        if (hexes.length >= 2 && /gradiente|gradient/i.test(txt)) html += `<div class="grad" style="background:linear-gradient(120deg,${hexes.slice(0, 3).join(",")})"></div>`;
+      }
+      if (fonts.length) html += `<div class="fonts">${fonts.map((f) => `<div><big style="font-family:'${f}',system-ui">Aa 123 Abc</big><small>${esc(f)}</small></div>`).join("")}</div>`;
+      if (rads.length) {
+        // cantos concêntricos: dentro = fora − padding (regra da Apple)
+        const outs = [...new Set(rads.map(([, r]) => r))].filter((r) => r >= 12).sort((a, b) => b - a).slice(0, 3);
+        html += `<div class="conc">${outs.map((r) => { const pad = 8, inn = Math.max(4, r - pad);
+          return `<div><span class="out" style="display:block;width:96px;height:66px;border-radius:${r}px;padding:${pad}px"><span class="in" style="display:block;border-radius:${inn}px"></span></span>${r} − ${pad} = ${inn}</div>`; }).join("")}</div>`;
+      }
+      if (rads.length) html += `<div class="rads">${rads.map(([n, r]) => `<div><i style="border-radius:${r}px"></i>${esc(n)} ${r}</div>`).join("")}</div>`;
+      const lis = s.linhas.filter((l) => /^\s*[-*]\s/.test(l)).map((l) => `<li>${md(l.replace(/^\s*[-*]\s/, ""))}</li>`);
+      const ps = s.linhas.filter((l) => !/^\s*[-*]\s/.test(l)).map((l) => `<p>${md(l)}</p>`);
+      html += `<div class="rules">${ps.join("")}${lis.length ? `<ul>${lis.join("")}</ul>` : ""}</div></section>`;
+    });
+    $("#lista").innerHTML = html + "</div>";
+  }
+
+  /* ── aba Futuro: PLANOS-FUTUROS.md (ideias para depois; a IA só executa o que ele promover) ── */
+  async function desenharFuturo() {
+    let t = ""; try { t = (await (await fetch("/futuros")).json()).texto; } catch {}
+    if (!t.trim()) { $("#lista").innerHTML = `<div class="vazio">Sem PLANOS-FUTUROS.md neste projeto</div>`; return; }
+    const secs = []; let cur = null;
+    for (const l of t.split(/\r?\n/)) {
+      if (/^##\s/.test(l)) { cur = { t: l.replace(/^#+\s*/, ""), itens: [] }; secs.push(cur); }
+      else if (cur && /^\s*-\s/.test(l)) cur.itens.push(l.replace(/^\s*-\s(\[[ x]\]\s)?/, ""));
+    }
+    $("#lista").innerHTML = '<div class="ds">' + secs.filter((s) => s.itens.length).map((s, i) =>
+      `<section style="animation-delay:${i * 40}ms"><h2>${esc(s.t)}<span>${s.itens.length}</span></h2><div class="rules"><ul>${s.itens.map((x) => `<li>${md(x)}</li>`).join("")}</ul></div></section>`).join("") + "</div>";
+  }
+
+  function desenhar() {
+    if (document.activeElement && document.activeElement.tagName === "TEXTAREA") return; // não atrapalha quem está digitando
+    if (filtro === "design") return desenharDesign();
+    if (filtro === "futuro") return void desenharFuturo();
+    $("#nome").textContent = estado.projeto;
+    const todos = estado.secoes.flatMap((s) => s.itens);
+    const feitos = todos.filter((i) => i.feito).length;
+    const meio = todos.filter((i) => i.meio).length;
+    $("#pct").textContent = `${feitos}/${todos.length}` + (meio ? ` · ${meio} pela metade` : "");
+    $("#barra").style.width = `${todos.length ? (feitos / todos.length) * 100 : 0}%`;
+    // atual = primeiro item ainda não feito (falta ou pela metade)
+    const atualId = todos.find((i) => !i.feito)?.linha ?? null;
+    const notasDe = (id) => estado.notas.filter((n) => n.id === id);
+    let html = "";
+    estado.secoes.forEach((s, si) => {
+      const itens = s.itens.filter((i) => filtro === "todos" || (filtro === "feitos") === i.feito);  // "Falta" mostra também os pela metade
+      if (!itens.length) return;
+      const sm = s.itens.filter((i) => i.meio).length;
+      html += `<section style="animation-delay:${si * 40}ms"><h2>${esc(s.titulo)}<span class="${sm ? "meio" : ""}">${s.itens.filter((i) => i.feito).length}/${s.itens.length}${sm ? ` · ${sm} pela metade` : ""}</span></h2>`;
+      for (const it of itens) {
+        const ns = notasDe(it.id), pend = ns.filter((n) => !n.resolvido).length;
+        const ehAtual = atualId === it.linha;
+        const mudou = antes[it.linha] !== undefined && antes[it.linha] !== it.feito && it.feito;
+        html += `<div class="it ${ehAtual ? "atual" : ""} ${it.feito ? "done" : ""} ${it.meio ? "meio" : ""} ${mudou ? "flash" : ""}">
+          <button class="ck" data-l="${it.linha}" data-e="${it.feito ? "feito" : it.meio ? "meio" : "falta"}" aria-label="${it.feito ? "Marcar pela metade" : it.meio ? "Desmarcar" : "Marcar"}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>
+          <span class="tx">${esc(it.texto)}</span>
+          <button class="cbtn ${pend ? "has" : ""}" data-c="${esc(it.id)}">${ns.length ? ns.length + (pend ? " pergunta" + (pend > 1 ? "s" : "") : " ok") : "Comentar"}</button>
+          ${aberto === it.id ? `<div class="notes">${ns.map((n) => `<div class="note ${n.resolvido ? "ok" : ""}"><div class="w">${esc(n.quando)}</div><div class="q">${esc(n.texto)}</div>${n.resposta ? `<div class="a">IA: ${esc(n.resposta)}</div>` : ""}</div>`).join("")}
+            <div class="ask"><textarea placeholder="Pergunta ou pedido sobre ${esc(it.id)}…" data-t="${esc(it.id)}"></textarea><button data-s="${esc(it.id)}">Enviar</button></div></div>` : ""}
+        </div>`;
+      }
+      html += "</section>";
+    });
+    $("#lista").innerHTML = html;
+    antes = Object.fromEntries(todos.map((i) => [i.linha, i.feito]));
+    // abre (e acompanha) sempre no item atual
+    if (atualId !== atualAntes) { const primeira = atualAntes === null; atualAntes = atualId; requestAnimationFrame(() => irAtual(!primeira)); }
+  }
+
+  document.addEventListener("click", async (e) => {
+    const sw = e.target.closest(".sw"); if (sw) { navigator.clipboard?.writeText(sw.dataset.hex); toast(`${sw.dataset.hex} copiado`); return; }
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.l !== undefined) {
+      const prox = { falta: "feito", feito: "meio", meio: "falta" }[t.dataset.e];
+      try { await post("/marcar", { linha: +t.dataset.l, estado: prox }); await carregar(); } catch { toast("O ROADMAP mudou, tente de novo"); carregar(); }
+    } else if (t.dataset.c !== undefined) {
+      aberto = aberto === t.dataset.c ? null : t.dataset.c; desenhar();
+      document.querySelector(`textarea[data-t="${CSS.escape(t.dataset.c)}"]`)?.focus();
+    } else if (t.dataset.s !== undefined) {
+      const ta = document.querySelector(`textarea[data-t="${CSS.escape(t.dataset.s)}"]`);
+      if (!ta.value.trim()) return;
+      await post("/comentar", { id: t.dataset.s, texto: ta.value });
+      ta.value = ""; ta.blur(); toast("Enviado para a IA"); estado = null; carregar();
+    } else if (t.dataset.f !== undefined && t.closest("#filtros")) {
+      filtro = t.dataset.f; document.querySelectorAll("#filtros button").forEach((b) => b.classList.toggle("on", b === t));
+      if (filtro === "design") await carregarDesign();
+      desenhar(); if (filtro !== "design" && filtro !== "futuro") irAtual(false); else window.scrollTo({ top: 0 });
+    }
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.ctrlKey && e.target.dataset.t) document.querySelector(`button[data-s="${CSS.escape(e.target.dataset.t)}"]`)?.click(); });
+  let t0 = null; try { t0 = localStorage.getItem("ck.tema"); } catch {}
+  tema(t0 ?? (matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "escuro"));
+  document.querySelector("#ir").addEventListener("click", () => irAtual());
+  document.querySelector("#tema").addEventListener("click", () => tema(document.documentElement.dataset.tema === "claro" ? "escuro" : "claro"));
+  carregar(); setInterval(carregar, 2000);
+</script>
+</body>
+</html>

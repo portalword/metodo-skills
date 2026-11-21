@@ -1,0 +1,127 @@
+"""
+Checklist ao vivo do ROADMAP (metodo-projeto).
+
+Uso:  python servidor.py "C:/caminho/do/projeto"  [porta]
+Abre: http://127.0.0.1:8765  (a página atualiza sozinha)
+
+- Lê os itens "- [ ] 1.2 texto" / "- [x] ..." / "- [-] ..." (pela metade) do ROADMAP.md do projeto (títulos "## ..." viram seções).
+- Clicar no item na página marca/desmarca direto no ROADMAP.md (a IA vê na hora).
+- Comentários/perguntas do usuário vão para CHECKLIST-COMENTARIOS.md (a IA lê e responde ali).
+Só usa a biblioteca padrão do Python. Escuta só em 127.0.0.1 (ninguém de fora acessa).
+"""
+import json, re, sys, os, datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+ROOT = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else ".")
+PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8765
+ROADMAP = os.path.join(ROOT, "ROADMAP.md")
+NOTES = os.path.join(ROOT, "CHECKLIST-COMENTARIOS.md")
+REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
+FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
+PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checklist.html")
+ITEM = re.compile(r"^(\s*)- \[( |x|X|-)\] (.*)$")  # [-] = pela metade / precisa de outro passo
+
+
+def read(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+
+
+def parse():
+    """Devolve seções com itens: [{titulo, itens:[{linha, feito, texto, id}]}]"""
+    secs, cur = [], None
+    for i, line in enumerate(read(ROADMAP).splitlines()):
+        if line.startswith("#"):
+            cur = {"titulo": line.lstrip("#").strip(), "itens": []}
+            secs.append(cur)
+            continue
+        m = ITEM.match(line)
+        if m:
+            if cur is None:
+                cur = {"titulo": "", "itens": []}
+                secs.append(cur)
+            txt = m.group(3).strip()
+            num = re.match(r"^(\d+(\.\d+)*)\s", txt)
+            cur["itens"].append({"linha": i, "feito": m.group(2).lower() == "x", "meio": m.group(2) == "-", "texto": txt, "id": num.group(1) if num else txt[:40]})
+    return [s for s in secs if s["itens"]]
+
+
+def notes():
+    """Comentários: blocos '### <id> · <data>' com o texto abaixo; respostas da IA começam com '> IA:'."""
+    out, cur = [], None
+    for line in read(NOTES).splitlines():
+        m = re.match(r"^### (.+?) · (.+)$", line)
+        if m:
+            cur = {"id": m.group(1), "quando": m.group(2), "texto": "", "resposta": "", "resolvido": False}
+            out.append(cur)
+        elif cur is not None:
+            if line.startswith("> IA:"):
+                cur["resposta"] += line[5:].strip() + " "
+            elif line.strip() == "[resolvido]":
+                cur["resolvido"] = True
+            else:
+                cur["texto"] += line + "\n"
+    for n in out:
+        n["texto"], n["resposta"] = n["texto"].strip(), n["resposta"].strip()
+    return out
+
+
+class H(BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def send(self, code, body, kind="application/json"):
+        b = body.encode("utf-8") if isinstance(body, str) else body
+        self.send_response(code)
+        self.send_header("Content-Type", kind + "; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(b)))
+        self.end_headers()
+        self.wfile.write(b)
+
+    def do_GET(self):
+        if self.path == "/" or self.path.startswith("/?"):
+            return self.send(200, read(PAGE), "text/html")
+        if self.path == "/estado":
+            nome = os.path.basename(ROOT)
+            return self.send(200, json.dumps({"projeto": nome, "secoes": parse(), "notas": notes(), "mtime": os.path.getmtime(ROADMAP) if os.path.exists(ROADMAP) else 0}))
+        if self.path == "/futuros":
+            return self.send(200, json.dumps({"texto": read(FUTUROS)}))
+        if self.path == "/design":
+            return self.send(200, json.dumps({"texto": read(REGRAS)}))
+        self.send(404, "{}")
+
+    def do_POST(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        data = json.loads(self.rfile.read(n) or b"{}")
+        if self.path == "/marcar":
+            lines = read(ROADMAP).splitlines()
+            i = int(data["linha"])
+            m = ITEM.match(lines[i]) if 0 <= i < len(lines) else None
+            if not m:
+                return self.send(409, json.dumps({"erro": "o ROADMAP mudou, recarregue"}))
+            marca = {"feito": "x", "meio": "-"}.get(data.get("estado"), "x" if data.get("feito") else " ")
+            lines[i] = f"{m.group(1)}- [{marca}] {m.group(3)}"
+            with open(ROADMAP, "w", encoding="utf-8", newline="\n") as f:
+                f.write("\n".join(lines) + "\n")
+            return self.send(200, "{}")
+        if self.path == "/comentar":
+            txt = str(data.get("texto", "")).strip()
+            if not txt:
+                return self.send(400, "{}")
+            quando = datetime.datetime.now().strftime("%d/%m %H:%M")
+            head = "" if os.path.exists(NOTES) else "# Comentários do checklist\n\nPerguntas e pedidos do usuário por item. A IA responde com linhas '> IA: ...' e marca '[resolvido]'.\n"
+            with open(NOTES, "a", encoding="utf-8", newline="\n") as f:
+                f.write(f"{head}\n### {data.get('id', '?')} · {quando}\n{txt}\n")
+            return self.send(200, "{}")
+        self.send(404, "{}")
+
+
+if __name__ == "__main__":
+    if not os.path.exists(ROADMAP):
+        print(f"Sem ROADMAP.md em {ROOT}")
+    print(f"Checklist: http://127.0.0.1:{PORT}  (projeto: {ROOT})")
+    ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()
