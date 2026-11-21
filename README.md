@@ -54,19 +54,19 @@ In **Claude Code** they are real slash commands. In other tools, type them in th
 
 ## Install
 
-**Easiest:** tell your AI *"install metodo-skills from https://github.com/&lt;your-user&gt;/metodo-skills"*.
+**Easiest:** tell your AI *"install metodo-skills from https://github.com/portalword/metodo-skills"*.
 
 **Manual:**
 
 ```powershell
 # Windows
-git clone https://github.com/<your-user>/metodo-skills
+git clone https://github.com/portalword/metodo-skills
 powershell -ExecutionPolicy Bypass -File metodo-skills\install.ps1
 ```
 
 ```sh
 # macOS / Linux
-git clone https://github.com/<your-user>/metodo-skills
+git clone https://github.com/portalword/metodo-skills
 sh metodo-skills/install.sh
 ```
 
