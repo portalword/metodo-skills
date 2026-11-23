@@ -110,6 +110,9 @@ não permite redistribuir).
 
 ## 8. Crítico visual (subagent)
 
+- **Quando roda (se ativo na aba Subagents):** ao fim de **todo subpasso que cria ou muda tela**, antes de mostrar a ele,
+  e de novo no passo **Entrega** (metodo-projeto), com todas as telas.
+
 - **Antes de chamar:** leia `SUBAGENTS.json` na raiz do projeto (aba **Subagents** do checklist). `ativo: false` → não
   chame. `limite: 0` → sem limite de rodadas; `limite: N` → no máximo N rodadas por tela, depois mostre o que sobrou.
   Sem o arquivo: ativo, sem limite.
