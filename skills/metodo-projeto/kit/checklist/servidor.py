@@ -19,9 +19,10 @@ NOTES = os.path.join(ROOT, "CHECKLIST-COMENTARIOS.md")
 REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
 FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
 SUBS = os.path.join(ROOT, "SUBAGENTS.json")  # config dos subagents (aba Subagents)
-SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0,  # limite 0 = sem limite
+SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0, "modelo": "sonnet",  # limite 0 = sem limite
                                    "opcoes": {"aprovaInterface": False, "aprovaEntrega": False}}}
-CAMPOS = ("ativo", "limite", "opcoes")
+MODELOS = ("haiku", "sonnet", "opus")
+CAMPOS = ("ativo", "limite", "modelo", "opcoes")
 HIST = os.path.join(ROOT, "CRITICO-HISTORICO.md")  # rodadas: '### <passo> · <data> · <aprovado|recusado>' + 'Resumo: ...' + texto
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checklist.html")
 ITEM = re.compile(r"^(\s*)- \[( |x|X|-)\] (.*)$")  # [-] = pela metade / precisa de outro passo
@@ -81,6 +82,7 @@ def subs():
     for k, v in SUBS_PADRAO.items():
         c = json.loads(json.dumps(v)); salvo = cfg.get(k, {})
         c["ativo"] = salvo.get("ativo", c["ativo"]); c["limite"] = salvo.get("limite", c["limite"])
+        c["modelo"] = salvo.get("modelo") if salvo.get("modelo") in MODELOS else c["modelo"]
         c["opcoes"].update({o: bool(x) for o, x in salvo.get("opcoes", {}).items() if o in c["opcoes"]})
         out[k] = c
     return out
@@ -173,6 +175,7 @@ class H(BaseHTTPRequestHandler):
                 return self.send(400, "{}")
             if "ativo" in data: cfg[k]["ativo"] = bool(data["ativo"])
             if "limite" in data: cfg[k]["limite"] = max(0, min(999, int(data["limite"] or 0)))
+            if data.get("modelo") in MODELOS: cfg[k]["modelo"] = data["modelo"]
             if data.get("opcao") in cfg[k]["opcoes"]: cfg[k]["opcoes"][data["opcao"]] = bool(data.get("valor"))
             with open(SUBS, "w", encoding="utf-8", newline="\n") as f:
                 json.dump({k: {x: v[x] for x in CAMPOS} for k, v in cfg.items()}, f, ensure_ascii=False, indent=2)

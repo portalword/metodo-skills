@@ -229,6 +229,7 @@
         <div class="seg"><button data-sl="${k}" data-v="0" class="${s.limite ? "" : "on"}">Sem limite</button><button data-sl="${k}" data-v="${s.limite || 3}" class="${s.limite ? "on" : ""}">Limite</button></div>
         ${s.limite ? `<input class="lim" type="number" min="1" max="999" value="${s.limite}" data-lk="${k}" aria-label="Rodadas">` : ""}
         <button class="tg ${s.ativo ? "on" : ""}" data-sa="${k}" aria-label="Ativo"></button></div>
+        ${s.modelo ? `<div class="op"><span>Modelo</span><div class="seg">${["haiku", "sonnet", "opus"].map((m) => `<button data-sm="${k}" data-v="${m}" class="${s.modelo === m ? "on" : ""}">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}</div></div>` : ""}
         ${Object.entries(s.opcoes || {}).map(([o, v]) => `<div class="op"><span>${OPCOES[o] || o}</span><button class="tg ${v ? "on" : ""}" data-sk="${k}" data-op="${o}" aria-label="${OPCOES[o] || o}"></button></div>`).join("")}
       </section>`).join("");
     const hist = d.historico.length ? `<section><h2>Histórico do crítico<span>${d.historico.length}</span></h2><div class="hist">${d.historico.map((x, i) =>
@@ -292,6 +293,7 @@
     if (t.dataset.sa) { await post("/subagents", { id: t.dataset.sa, ativo: !subsCfg[t.dataset.sa].ativo }); return desenharSubs(); }
     if (t.dataset.sk) { await post("/subagents", { id: t.dataset.sk, opcao: t.dataset.op, valor: !subsCfg[t.dataset.sk].opcoes[t.dataset.op] }); return desenharSubs(); }
     if (t.dataset.hi !== undefined) { histAberto = histAberto === +t.dataset.hi ? null : +t.dataset.hi; return desenharSubs(); }
+    if (t.dataset.sm) { await post("/subagents", { id: t.dataset.sm, modelo: t.dataset.v }); return desenharSubs(); }
     if (t.dataset.sl) { await post("/subagents", { id: t.dataset.sl, limite: +t.dataset.v }); return desenharSubs(); }
     if (t.dataset.l !== undefined) {
       const prox = { falta: "feito", feito: "meio", meio: "falta" }[t.dataset.e];

@@ -114,6 +114,9 @@ não permite redistribuir).
   e de novo no passo **Entrega** (metodo-projeto), com todas as telas. Pular o crítico com ele ativo é erro.
 - **Antes de chamar:** leia `SUBAGENTS.json` na raiz do projeto. `ativo: false` → não chame. `limite: 0` → sem limite
   de rodadas; `limite: N` → no máximo N rodadas por subpasso, depois mostre o que sobrou. Sem o arquivo: ativo, sem limite.
+- **Modelo:** chame o crítico com o `modelo` do `SUBAGENTS.json` (parâmetro `model` do subagent); sem o campo, `sonnet`.
+  Nunca herde o modelo da conversa nem suba de modelo por conta própria.
+- **Economia:** mande só os estados que o subpasso mudou; prints com até ~1280 px de largura.
 - **O que o agente de desenvolvimento manda (e só isso):**
   - os **prints** da tela (normal, hover, vazio, erro, claro/escuro quando houver);
   - uma linha neutra: `Passo 3.2 · <o que é>` (ex.: `Passo 3.2 · tela de configurações`).
