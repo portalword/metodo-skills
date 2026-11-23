@@ -39,15 +39,16 @@ Every time the checklist opens (or when the AI can't open a browser) it sends th
 
 | Command | Shows / does |
 |---|---|
+| `/abrir-checklist` · `/open-checklist` | open the checklist page |
 | `/checklist` | everything |
-| `/falta` | what's left |
-| `/feitos` | what's done |
-| `/atual` | where we stopped |
+| `/falta` · `/todo` | what's left |
+| `/feitos` · `/done` | what's done |
+| `/atual` · `/current` | where we stopped |
 | `/design` | visual rules |
-| `/futuro` | ideas for later |
-| `/comentarios` | questions and answers |
-| `/marcar 1.2` · `/metade 1.2` · `/desmarcar 1.2` | mark done · half-done · not done |
-| `/comentar 1.2 text` | comment on an item |
+| `/futuro` · `/future` | ideas for later |
+| `/comentarios` · `/comments` | questions and answers |
+| `/marcar` `/metade` `/desmarcar 1.2` · `/check` `/half` `/uncheck 1.2` | mark done · half-done · not done |
+| `/comentar` · `/comment 1.2 text` | comment on an item |
 
 In **Claude Code** they are real slash commands. In other tools, type them in the chat; the AI runs
 `kit/checklist/texto.py` and shows the result.

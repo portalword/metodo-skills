@@ -1,0 +1,4 @@
+---
+description: Desmarcar (ex.: 1.2) (desmarcar)
+---
+Rode `python "~/.claude/skills/metodo-projeto/kit/checklist/texto.py" "<pasta do projeto atual>" desmarcar $ARGUMENTS` (pasta do projeto = a pasta de trabalho atual) e mostre a saída exatamente como veio, sem comentários.

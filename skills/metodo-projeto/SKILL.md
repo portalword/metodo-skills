@@ -130,16 +130,19 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 - **Comandos no chat (sempre, com ou sem navegador):** ao abrir o checklist — ou se não conseguir abrir — mande esta
   mensagem e nada mais (sem explicar):
   ```
+  /abrir-checklist — abre a página (/open-checklist)
   /checklist — tudo
-  /falta — o que falta
-  /feitos — o que já foi
-  /atual — onde paramos
+  /falta — o que falta (/todo)
+  /feitos — o que já foi (/done)
+  /atual — onde paramos (/current)
   /design — regras visuais
-  /futuro — ideias para depois
-  /comentarios — perguntas e respostas
-  /marcar 1.2 · /metade 1.2 · /desmarcar 1.2
-  /comentar 1.2 texto
+  /futuro — ideias para depois (/future)
+  /comentarios — perguntas e respostas (/comments)
+  /marcar 1.2 · /metade 1.2 · /desmarcar 1.2 (/check · /half · /uncheck)
+  /comentar 1.2 texto (/comment)
   ```
+  Comando em inglês = o mesmo em português (todo→falta, done→feitos, current→atual, future→futuro, comments→comentarios,
+  check→marcar, half→metade, uncheck→desmarcar, comment→comentar). `/abrir-checklist` = seção "Abrir" acima.
   Quando ele digitar um desses, rode `python "<pasta desta skill>/kit/checklist/texto.py" "<pasta do projeto>" <comando> [id] [texto]`
   e mostre a saída como veio (em `/comentar`, depois responda ao comentário). No Claude Code eles já existem como
   comandos de verdade em `~/.claude/commands/`.
