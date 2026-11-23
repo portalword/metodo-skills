@@ -39,8 +39,22 @@
   .it.meio .tx { color: var(--t1); }
   .it.atual { background: color-mix(in srgb, var(--brand) 12%, transparent); box-shadow: inset 3px 0 0 var(--brand); }
   .it.atual .tx { color: var(--t1); font-weight: 600; }
-  .ir { all: unset; cursor: pointer; padding: 5px 11px; border-radius: 99px; border: 1px solid var(--line); color: var(--t2); font-size: 12px; }
-  .ir:hover { color: var(--t1); border-color: var(--brand); }
+  .ir { all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 10px; border: 1px solid var(--line2); display: grid; place-items: center; color: var(--t2); transition: transform 150ms, color 150ms, opacity 200ms; }
+  .ir:hover { transform: scale(1.08); color: var(--t1); border-color: var(--brand); }
+  .ir svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+  .ir.oculto { opacity: 0; pointer-events: none; }
+  .grp { display: flex; gap: 6px; }
+  .grp .sub { display: flex; gap: 6px; max-width: 0; opacity: 0; overflow: hidden; transition: max-width 320ms cubic-bezier(.2,.8,.2,1), opacity 220ms; }
+  .grp.aberto .sub { max-width: 320px; opacity: 1; }
+  .papel { position: relative; background: var(--s1); border: 1px solid var(--line); border-radius: var(--r); padding: 22px 22px 22px 56px; line-height: 28px; animation: rise 300ms both;
+    background-image: repeating-linear-gradient(to bottom, transparent 0 27px, var(--line) 27px 28px); background-position: 0 21px; }
+  .papel::before { content: ""; position: absolute; top: 0; bottom: 0; left: 40px; width: 1.5px; background: color-mix(in srgb, var(--brand) 45%, transparent); }
+  .papel h3 { font-size: 15px; line-height: 28px; color: var(--t1); }
+  .papel .ct { display: grid; grid-template-columns: 130px 1fr; column-gap: 12px; }
+  .papel .ct b { color: var(--brand); font-weight: 600; }
+  .papel .ct span { color: var(--t1); white-space: pre-wrap; }
+  .papel .ct span.vz { color: var(--t3); }
+  .papel .selo { margin-top: 8px; color: var(--ok); font-weight: 600; }
   .leg { display: flex; gap: 12px; color: var(--t3); font-size: 12px; flex-wrap: wrap; }
   .leg b { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
   .tema { all: unset; cursor: pointer; width: 30px; height: 30px; border-radius: 10px; border: 1px solid var(--line2); display: grid; place-items: center; color: var(--t2); transition: transform 150ms, color 150ms; }
@@ -83,6 +97,17 @@
   .conc > div { display: grid; gap: 6px; justify-items: center; font-size: 11px; color: var(--t2); }
   .conc .out { border: 1.5px solid var(--brand); background: color-mix(in srgb, var(--brand) 8%, transparent); }
   .conc .in { width: 100%; height: 100%; background: color-mix(in srgb, var(--brand) 35%, transparent); }
+  .sa { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 6px 8px 10px; }
+  .sa b { color: var(--t1); font-size: 14px; margin-right: auto; }
+  .tg { all: unset; cursor: pointer; width: 42px; height: 24px; border-radius: 99px; background: var(--s2); border: 1px solid var(--line2); position: relative; transition: background 200ms; }
+  .tg::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 99px; background: var(--t2); transition: transform 200ms cubic-bezier(.2,.8,.2,1), background 200ms; }
+  .tg.on { background: var(--brand); } .tg.on::after { transform: translateX(18px); background: #fff; }
+  .seg { display: flex; background: var(--s2); border: 1px solid var(--line); border-radius: 10px; padding: 2px; gap: 2px; }
+  .seg button { all: unset; cursor: pointer; padding: 4px 10px; border-radius: 8px; font-size: 12px; color: var(--t2); }
+  .seg button.on { background: var(--s1); color: var(--t1); }
+  .lim { width: 64px; background: var(--bg); color: var(--t1); border: 1px solid var(--line2); border-radius: 8px; padding: 4px 8px; font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; outline: none; }
+  .lim:focus { border-color: var(--brand); }
+  .sa.off .seg, .sa.off .lim { opacity: .35; pointer-events: none; }
   .vazio { color: var(--t3); text-align: center; padding: 40px 0; }
   .toast { position: fixed; bottom: 16px; left: 50%; translate: -50% 0; background: var(--s2); border: 1px solid var(--line2); padding: 8px 14px; border-radius: 12px; opacity: 0; transition: opacity 200ms; pointer-events: none; }
   .toast.on { opacity: 1; }
@@ -96,10 +121,10 @@
   <header>
     <h1 id="nome">Checklist</h1>
     <div class="filters" id="filtros">
-      <button data-f="todos" class="on">Todos</button><button data-f="falta">Falta</button><button data-f="feitos">Feitos</button><button data-f="design">Design</button><button data-f="futuro">Futuro</button>
+      <div class="grp aberto" id="grp"><button data-f="todos" class="on">Checklist</button><div class="sub"><button data-f="falta">Falta</button><button data-f="feitos">Feitos</button><button data-f="futuro">Futuro</button></div></div><button data-f="contrato">Contrato</button><button data-f="design">Design</button><button data-f="subagents">Subagents</button>
     </div>
     <span class="pct" id="pct"></span>
-    <button class="ir" id="ir">Atual</button>
+    <button class="ir" id="ir" aria-label="Atual"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg></button>
     <button class="tema" id="tema" aria-label="Tema"></button>
   </header>
   <div class="leg"><span><b style="background:var(--ok)"></b>feito</span><span><b style="background:var(--warn)"></b>pela metade · clique de novo</span><span><b style="border:1.5px solid var(--line2)"></b>falta</span></div>
@@ -179,10 +204,33 @@
       `<section style="animation-delay:${i * 40}ms"><h2>${esc(s.t)}<span>${s.itens.length}</span></h2><div class="rules"><ul>${s.itens.map((x) => `<li>${md(x)}</li>`).join("")}</ul></div></section>`).join("") + "</div>";
   }
 
+  /* ── aba Subagents: SUBAGENTS.json (a IA lê antes de chamar um subagent; limite 0 = sem limite) ── */
+  let subsCfg = null;
+  async function desenharSubs() {
+    try { subsCfg = await (await fetch("/subagents")).json(); } catch { return; }
+    if (document.activeElement?.classList.contains("lim")) return;
+    $("#lista").innerHTML = '<div class="ds">' + Object.entries(subsCfg).map(([k, s], i) =>
+      `<section style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
+        <div class="seg"><button data-sl="${k}" data-v="0" class="${s.limite ? "" : "on"}">Sem limite</button><button data-sl="${k}" data-v="${s.limite || 3}" class="${s.limite ? "on" : ""}">Limite</button></div>
+        ${s.limite ? `<input class="lim" type="number" min="1" max="999" value="${s.limite}" data-lk="${k}" aria-label="Rodadas">` : ""}
+        <button class="tg ${s.ativo ? "on" : ""}" data-sa="${k}" aria-label="Ativo"></button></div></section>`).join("") + "</div>";
+  }
+
+  /* ── aba Contrato: bloco "## Contrato" do ROADMAP.md, numa folha pautada ── */
+  const PARTES = ["Ideia", "Prioridades", "Restrições", "Alvo", "Escopo", "Controles", "Verificação", "Pronto quando", "Ambiente"];
+  async function desenharContrato() {
+    let c = { partes: {}, aprovado: "" }; try { c = await (await fetch("/contrato")).json(); } catch {}
+    const linhas = PARTES.filter((p) => p !== "Controles" || c.partes[p]).map((p) => {
+      const v = c.partes[p] || ""; return `<b>${p}</b><span class="${v ? "" : "vz"}">${v ? md(v) : "—"}</span>`; }).join("");
+    $("#lista").innerHTML = `<div class="papel"><h3>Contrato</h3><div class="ct">${linhas}</div>${c.aprovado ? `<div class="selo">${esc(c.aprovado)}</div>` : ""}</div>`;
+  }
+
   function desenhar() {
     if (document.activeElement && document.activeElement.tagName === "TEXTAREA") return; // não atrapalha quem está digitando
     if (filtro === "design") return desenharDesign();
     if (filtro === "futuro") return void desenharFuturo();
+    if (filtro === "subagents") return void desenharSubs();
+    if (filtro === "contrato") return void desenharContrato();
     $("#nome").textContent = estado.projeto;
     const todos = estado.secoes.flatMap((s) => s.itens);
     const feitos = todos.filter((i) => i.feito).length;
@@ -221,6 +269,8 @@
   document.addEventListener("click", async (e) => {
     const sw = e.target.closest(".sw"); if (sw) { navigator.clipboard?.writeText(sw.dataset.hex); toast(`${sw.dataset.hex} copiado`); return; }
     const t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.sa) { await post("/subagents", { id: t.dataset.sa, ativo: !subsCfg[t.dataset.sa].ativo }); return desenharSubs(); }
+    if (t.dataset.sl) { await post("/subagents", { id: t.dataset.sl, limite: +t.dataset.v }); return desenharSubs(); }
     if (t.dataset.l !== undefined) {
       const prox = { falta: "feito", feito: "meio", meio: "falta" }[t.dataset.e];
       try { await post("/marcar", { linha: +t.dataset.l, estado: prox }); await carregar(); } catch { toast("O ROADMAP mudou, tente de novo"); carregar(); }
@@ -234,10 +284,13 @@
       ta.value = ""; ta.blur(); toast("Enviado para a IA"); estado = null; carregar();
     } else if (t.dataset.f !== undefined && t.closest("#filtros")) {
       filtro = t.dataset.f; document.querySelectorAll("#filtros button").forEach((b) => b.classList.toggle("on", b === t));
+      const lista = ["todos", "falta", "feitos", "futuro"].includes(filtro);
+      $("#grp").classList.toggle("aberto", lista); $("#ir").classList.toggle("oculto", !lista || filtro === "futuro");
       if (filtro === "design") await carregarDesign();
-      desenhar(); if (filtro !== "design" && filtro !== "futuro") irAtual(false); else window.scrollTo({ top: 0 });
+      desenhar(); if (!["design", "futuro", "subagents", "contrato"].includes(filtro)) irAtual(false); else window.scrollTo({ top: 0 });
     }
   });
+  document.addEventListener("change", async (e) => { const k = e.target.dataset?.lk; if (k) { await post("/subagents", { id: k, limite: Math.max(1, +e.target.value || 1) }); e.target.blur(); desenharSubs(); } });
   document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.ctrlKey && e.target.dataset.t) document.querySelector(`button[data-s="${CSS.escape(e.target.dataset.t)}"]`)?.click(); });
   let t0 = null; try { t0 = localStorage.getItem("ck.tema"); } catch {}
   tema(t0 ?? (matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "escuro"));

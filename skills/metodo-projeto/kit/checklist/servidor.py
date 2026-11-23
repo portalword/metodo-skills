@@ -18,6 +18,8 @@ ROADMAP = os.path.join(ROOT, "ROADMAP.md")
 NOTES = os.path.join(ROOT, "CHECKLIST-COMENTARIOS.md")
 REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
 FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
+SUBS = os.path.join(ROOT, "SUBAGENTS.json")  # config dos subagents (aba Subagents)
+SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0}}  # limite 0 = sem limite
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checklist.html")
 ITEM = re.compile(r"^(\s*)- \[( |x|X|-)\] (.*)$")  # [-] = pela metade / precisa de outro passo
 
@@ -47,6 +49,35 @@ def parse():
             num = re.match(r"^(\d+(\.\d+)*)\s", txt)
             cur["itens"].append({"linha": i, "feito": m.group(2).lower() == "x", "meio": m.group(2) == "-", "texto": txt, "id": num.group(1) if num else txt[:40]})
     return [s for s in secs if s["itens"]]
+
+
+def contrato():
+    """Bloco '## Contrato' do ROADMAP: linhas '- **Parte:** texto' (ou '**Parte:** texto') + linha 'Plano aprovado em'."""
+    partes, dentro, atual, aprovado = {}, False, None, ""
+    for line in read(ROADMAP).splitlines():
+        if "aprovado em" in line.lower() and line.lstrip().startswith(">"):
+            aprovado = line.lstrip("> ").strip()
+        if line.startswith("## "):
+            dentro = line[3:].strip().lower().startswith("contrato"); atual = None; continue
+        if not dentro:
+            continue
+        m = re.match(r"^\s*(?:[-*]|\d+\.)?\s*\*\*(.+?):?\*\*:?\s*(.*)$", line)
+        if m:
+            atual = m.group(1).strip().rstrip(":"); partes[atual] = m.group(2).strip()
+        elif atual and line.strip():
+            partes[atual] = (partes[atual] + "\n" + line.strip()).strip()
+    return {"partes": partes, "aprovado": aprovado}
+
+
+def subs():
+    try:
+        cfg = json.loads(read(SUBS) or "{}")
+    except ValueError:
+        cfg = {}
+    out = {}
+    for k, v in SUBS_PADRAO.items():
+        c = dict(v); c.update({x: cfg.get(k, {}).get(x, c[x]) for x in ("ativo", "limite")}); out[k] = c
+    return out
 
 
 def notes():
@@ -90,6 +121,10 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, json.dumps({"projeto": nome, "secoes": parse(), "notas": notes(), "mtime": os.path.getmtime(ROADMAP) if os.path.exists(ROADMAP) else 0}))
         if self.path == "/futuros":
             return self.send(200, json.dumps({"texto": read(FUTUROS)}))
+        if self.path == "/contrato":
+            return self.send(200, json.dumps(contrato()))
+        if self.path == "/subagents":
+            return self.send(200, json.dumps(subs()))
         if self.path == "/design":
             return self.send(200, json.dumps({"texto": read(REGRAS)}))
         self.send(404, "{}")
@@ -108,6 +143,15 @@ class H(BaseHTTPRequestHandler):
             with open(ROADMAP, "w", encoding="utf-8", newline="\n") as f:
                 f.write("\n".join(lines) + "\n")
             return self.send(200, "{}")
+        if self.path == "/subagents":
+            cfg = subs(); k = data.get("id")
+            if k not in cfg:
+                return self.send(400, "{}")
+            if "ativo" in data: cfg[k]["ativo"] = bool(data["ativo"])
+            if "limite" in data: cfg[k]["limite"] = max(0, min(999, int(data["limite"] or 0)))
+            with open(SUBS, "w", encoding="utf-8", newline="\n") as f:
+                json.dump({k: {"ativo": v["ativo"], "limite": v["limite"]} for k, v in cfg.items()}, f, ensure_ascii=False, indent=2)
+            return self.send(200, json.dumps(cfg))
         if self.path == "/comentar":
             txt = str(data.get("texto", "")).strip()
             if not txt:

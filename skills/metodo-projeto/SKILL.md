@@ -1,7 +1,7 @@
 ---
 name: metodo-projeto
 description: >-
-  Método de trabalho do usuário para qualquer projeto (app, site, bot, script, mod). REGRA PRINCIPAL: plano primeiro —
+  Método de trabalho do José para qualquer projeto (app, site, bot, script, mod). REGRA PRINCIPAL: plano primeiro —
   nenhum código antes do plano completo e aprovado por ele. Planejar num ROADMAP.md com
   passos e subpassos, fazer UM subpasso por vez, "aprovado" = marcar [x] e seguir, checklist ao vivo numa aba
   (a IA e ele marcam e comentam), VERIFICAR DEPOIS quando ele está no celular, qualidade ("feito de verdade",
@@ -41,21 +41,55 @@ Permitido antes da aprovação: conversar, pesquisar, ler arquivos, criar `ROADM
 parte do plano, não do código.
 
 **Roteiro do plano:**
-1. Entenda a ideia; pergunte o que for decisão dele (o que faz, para quem, stack, nuvem × local, nome, prazo). Explique
+1. **Pergunte bastante.** Enquanto estiver em plano, faça perguntas em rodadas (3–6 por vez, numeradas) até cobrir
+   tudo, e só pare quando **ele disser "plano finalizado"**. Até lá, cada resposta termina com novas perguntas.
+   **Formato de cada pergunta** (a interpretação pode ser difícil):
+   ```
+   1. Pergunta curta e simples?
+
+      Explicação: o que essa pergunta quer saber e por quê (uma linha, com exemplo se ajudar).
+   ```
+   Entenda a ideia; pergunte o que for decisão dele (o que faz, para quem, stack, nuvem × local, nome, prazo). Explique
    termos técnicos em português simples.
-2. Escreva o `ROADMAP.md` completo na raiz:
+2. **Contrato do plano.** A **primeira mensagem** dele ("quero fazer um app que…") vira a parte **Ideia**. As perguntas
+   seguintes preenchem o resto do bloco `## Contrato` no topo do `ROADMAP.md` (uma linha por parte, no formato
+   `- **Parte:** texto`, que a aba **Contrato** do checklist mostra numa folha). A lacuna de cada parte vira a próxima
+   pergunta; o plano está completo quando nenhuma estiver vazia:
+   1. **Ideia:** o que entregar e o nível de qualidade, em um parágrafo.
+   2. **Prioridades:** lista em ordem, usada quando duas coisas brigam.
+   3. **Restrições:** o que é proibido ou obrigatório (tecnologias, arquivos, privacidade, custo).
+   4. **Alvo:** números no lugar de adjetivos (máquina/aparelho, tempo de abertura, tamanho, FPS, preço).
+   5. **Escopo:** tudo que o produto tem, em itens (telas, funções). Nada de "bonito", "rápido".
+   6. **Controles:** só quando o produto precisa (jogo, app com atalhos) ou ele pedir; senão, nem pergunte.
+   7. **Verificação:** como cada coisa será conferida (teste, medida, crítico visual da design-sistema).
+   8. **Pronto quando:** condições medíveis + lista de entregas com nome.
+   9. **Ambiente:** onde roda e com quais ferramentas.
+   Em planos seguintes (Plano 2…), a prioridade 1 é sempre "não quebrar o que já funciona", medindo antes e depois.
+3. Com o Contrato aprovado ("plano finalizado"), gere o checklist **a partir dele**: cada subpasso cita a parte do
+   Contrato que cumpre e tem seu "pronto quando" em uma linha. Escreva o `ROADMAP.md` completo na raiz:
    - Passos numerados do começo à entrega; subpassos `- [ ] 1.1 texto` pequenos o bastante para mostrar e aprovar.
    - Com interface: design primeiro (ver design-sistema). Tela com dados de exemplo antes da lógica real.
    - Último passo: entrega (instalador/deploy).
-3. Mostre o plano (checklist ao vivo, §2) e pergunte o que tirar, mudar ou acrescentar. Ajuste até ele aprovar.
-4. **Plano aprovado** = ele diz "aprovado" para o plano. Escreva no topo do ROADMAP a linha
+4. Mostre o plano (checklist ao vivo, §2) e pergunte o que tirar, mudar ou acrescentar. Ajuste até ele aprovar.
+5. **Plano aprovado** = ele diz "aprovado" para o plano. Escreva no topo do ROADMAP a linha
    `> Plano aprovado em DD/MM/AAAA — código liberado.` Só a partir daí comece o Passo 1.
-5. Retomando um projeto sem essa linha no ROADMAP: o plano ainda não foi aprovado → volte ao passo 3.
+6. Retomando um projeto sem essa linha no ROADMAP: o plano ainda não foi aprovado → volte ao passo 4.
+
+**Contrato assinado = travado.** Depois de "plano finalizado"/"aprovado", o Contrato não muda até o próximo plano:
+- **Pode (ajuste):** mexer na forma do que está sendo feito ou já foi aprovado — trocar botão de lugar, pôr um botão ali,
+  refazer o layout de uma tela, cor, texto, "não aprovado, muda isso".
+- **Pode (remover):** tirar uma função do plano. Marque `- [x] 3.1 ~~texto~~ (removido)` e siga para a próxima.
+- **Não pode (trocar):** pôr uma função nova no lugar ou em cima de outra ("não quero mais a 3.1, quero a função X").
+  Diga em uma frase que muda o Contrato, anote em `PLANOS-FUTUROS.md` para o próximo plano e siga o atual.
+- Na dúvida: se muda o Escopo ou as Prioridades do Contrato, é troca; se cabe no subpasso atual, é ajuste.
 
 **Depois de aprovado, o plano continua vivo:**
-- Ideia nova que entra **agora** → vira subpasso no ROADMAP (ex.: `12.5`), com o "ok" dele.
+- Ajuste pedido agora (ver acima) → vira subpasso no ROADMAP (ex.: `12.5`), com o "ok" dele.
 - Ideia para **depois** (ou que ele ainda não decidiu) → vai para `PLANOS-FUTUROS.md`, nunca direto para o código.
-- Passo grande novo no meio do projeto → mini-plano: escreva os subpassos, mostre, espere "aprovado", só então code.
+
+**Fim do plano 1 → próximo plano:** quando todos os itens do ROADMAP estiverem `[x]`, pergunte se haverá um
+**Plano 2** completo (correções e mudanças). Se sim: mesmo roteiro (perguntas até "plano finalizado", ROADMAP com
+seção `# Plano 2`, linha `> Plano 2 aprovado em …`), puxando os itens do `PLANOS-FUTUROS.md` e o que ficou pendente.
 
 ## 1.1 PLANOS-FUTUROS.md (ideias para depois)
 
@@ -90,7 +124,9 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 - **Ele marca/desmarca** clicando (falta → feito → metade → falta), o que grava no `ROADMAP.md`.
 - **Comentários** dele por item vão para `CHECKLIST-COMENTARIOS.md` (blocos `### <id> · <data>`). A cada resposta sua,
   leia o arquivo; para cada bloco sem `[resolvido]`: responda no chat **e** escreva abaixo `> IA: <resposta curta>` e, se
-  resolveu, `[resolvido]`. Pedido de mudança vira subpasso.
+  resolveu, `[resolvido]`. Pedido de ajuste vira subpasso; troca de função vai para `PLANOS-FUTUROS.md` (§1).
+- **Aba Subagents:** liga/desliga cada subagent e define limite de rodadas (ou sem limite); grava em `SUBAGENTS.json`.
+  Leia esse arquivo antes de chamar qualquer subagent listado ali (ex.: crítico visual, ver design-sistema §8).
 - **Comandos no chat (sempre, com ou sem navegador):** ao abrir o checklist — ou se não conseguir abrir — mande esta
   mensagem e nada mais (sem explicar):
   ```
@@ -112,14 +148,25 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 ## 3. Ritmo de trabalho
 
 0. Só depois do plano aprovado (§1).
+   **Antes de cada subpasso, releia nesta ordem:** o `## Contrato` (fonte da verdade), o checklist do `ROADMAP.md` (onde
+   paramos) e o `PLANOS-FUTUROS.md` (o que NÃO entra agora). Mensagens antigas do chat são só apoio; se brigarem com o
+   Contrato, vale o Contrato.
 1. **Um subpasso por vez:** faça → confira "feito de verdade" (§4) → mostre → pare com "Sigo para o X?".
 2. **"Aprovado" / "próximo" / "seguir"** = marque `[x]`, faça um commit (`1.2 nome do subpasso`) e **já faça o próximo**
    na mesma resposta. Não enviar para a internet (push) sem ele pedir.
-3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → vira subpasso (ex.: `12.5`).
+3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → `PLANOS-FUTUROS.md` (Contrato travado, §1).
 4. **Ao fechar um subpasso (e sempre ao fechar um Passo):** releia o ROADMAP inteiro e o `CHECKLIST-COMENTARIOS.md`;
    liste em 1–3 linhas o que ficou `[ ]`/`[-]` em passos anteriores e comentários sem resposta, e pergunte se resolve
    agora ou segue. Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
-5. Ao terminar o ROADMAP, liste o que falta e mostre as ideias do `PLANOS-FUTUROS.md` para ele escolher.
+5. **Fechamento de cada subpasso (sempre neste formato, em texto grande):**
+   ```
+   ## 1.2 — Finalizado
+   **O que foi feito:** (resumo claro do que mudou)
+
+   ## Próximo: 1.3 — (nome)
+   **O que será feito:** (o que vou fazer)
+   ```
+6. Ao terminar o ROADMAP, liste o que falta e mostre as ideias do `PLANOS-FUTUROS.md` para ele escolher.
 
 ## 4. Qualidade
 
@@ -168,3 +215,9 @@ ambiente, páginas, arquivos de terceiros) não. O usuário consegue ver, editar
 - Respostas curtas, em português, direto ao ponto (ele se importa com tokens). Diga o que foi feito, o que não foi
   testado e o que precisa dele. Nunca diga "funciona" sem ter verificado. Erro seu: assuma em uma frase.
 - Decisões fixas ficam em arquivos do projeto (ROADMAP, `design/REGRAS.md`); preferências gerais dele, na memória da IA.
+- **Toda resposta organizada (inclusive fora do fechamento de subpasso):**
+  - Título curto em `##` dizendo do que se trata (ex.: `## Teste de modelos — resultado`).
+  - Blocos separados por `---`, cada um com subtítulo `###` ou rótulo em **negrito**.
+  - Itens em lista com `-`, uma ideia por linha; números e comparações em tabela.
+  - Sem narrar o processo ("enquanto baixa, vou…"): só o resultado final.
+  - No fim, separado por `---`: **Decisão / precisa de você:** em uma linha.

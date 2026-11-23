@@ -1,7 +1,7 @@
 ---
 name: design-sistema
 description: >-
-  Método de design do usuário para qualquer projeto com interface (app desktop, web, site, painel, jogo com menu):
+  Método de design do José para qualquer projeto com interface (app desktop, web, site, painel, jogo com menu):
   amostras em HTML → ele escolhe → regras em design/REGRAS.md → peças (componentes) → telas → revisão visual.
   Traz princípios universais (sem texto explicativo, cor só com significado, cantos concêntricos, calma quando
   parado, acessibilidade), um estilo padrão que o REGRAS.md de cada projeto pode trocar, o kit de amostras, e as
@@ -29,8 +29,8 @@ O visual nasce de **decisões pequenas, vistas e aprovadas**, que viram **regras
 
 - `design/REGRAS.md` (no projeto) — a lei visual daquele projeto. Mudou de ideia? Atualize ele **primeiro**.
 - `kit/amostras.html` — modelo para as amostras do passo 2.1.
-- `exemplo/REGRAS-exemplo.md` — exemplo de formato (um app real). **Não copie as cores/mascote dele.**
-- Skills de terceiros (ver §5): instaladas separadamente pelo `install` do repositório, cada uma da fonte oficial.
+- `exemplo/REGRAS-gemini.md` — exemplo de formato (projeto Gemini). **Não copie as cores/mascote dele.**
+- `skills/` — cópias da taste-skill, interface-design e transitions (ver §5); a dataviz é usada pelo nome.
 
 ## 2. Fluxo (cada item = um subpasso do ROADMAP)
 
@@ -79,18 +79,18 @@ O visual nasce de **decisões pequenas, vistas e aprovadas**, que viram **regras
 ## 5. Skills incluídas (em `skills/`)
 
 Leia cada uma só no momento da tabela (economiza tokens). **Site** → taste-skill; **app/dashboard** → interface-design;
-as duas nunca na mesma tela. Gráficos dentro de qualquer uma → dataviz. Animação → transitions. Elas **seguem** o REGRAS.md
-e os §3–4: se uma delas sugerir algo contra (ex.: emoji, texto de ajuda, outra paleta), vale o REGRAS.md.
-**Onde achar:** na pasta de skills da ferramenta (ex.: `~/.claude/skills/<nome>/SKILL.md`). Se faltar alguma, diga qual e
-ofereça instalar da fonte oficial (lista no README do repositório `metodo-skills`), só com o "pode" dele; sem ela, siga em frente.
+as duas nunca na mesma tela. Gráficos dentro de qualquer uma → dataviz. Animação → transitions. Elas **seguem** o REGRAS.md e os §3–4: se uma delas sugerir algo
+contra (ex.: emoji, texto de ajuda, outra paleta), vale o REGRAS.md. Se a versão instalada separadamente em
+`~/.claude/skills/` for mais nova, use a instalada — mas com a mesma prioridade. Não publique esta pasta (o transitions
+não permite redistribuir).
 
 | Skill | Quando ler | Para quê |
 |---|---|---|
-| `design-taste-frontend` ([Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill)) | **sites e landing pages**: antes das amostras e de cada página | hierarquia, espaço, anti-"cara de IA". Em site, use o processo dela, com a identidade do REGRAS.md. |
-| `interface-design` ([Dammyjay93/interface-design](https://github.com/Dammyjay93/interface-design)) | **apps, painéis, dashboards, configurações, tabelas, formulários**: antes das amostras (ideias de direção visual) e de cada tela de app; também para revisar uma tela | layout de app, densidade de informação, hierarquia, estados, acabamento. Use para gerar opções de amostra **diferentes de verdade** entre si. |
+| `skills/design-taste-frontend/` | **sites e landing pages**: antes das amostras e de cada página | hierarquia, espaço, anti-"cara de IA". Em site, use o processo dela, com a identidade do REGRAS.md. |
+| `skills/interface-design/` | **apps, painéis, dashboards, configurações, tabelas, formulários**: antes das amostras (ideias de direção visual) e de cada tela de app; também para revisar uma tela | layout de app, densidade de informação, hierarquia, estados, acabamento. Use para gerar opções de amostra **diferentes de verdade** entre si. |
 | `dataviz` (skill da ferramenta, chamada pelo nome; se não existir, pule) | **qualquer gráfico, medidor, KPI, sparkline ou cartão de número** | tipo certo de gráfico, cores de série, eixos, legenda, tooltip; trocar a paleta neutra dela pelas cores do REGRAS.md. |
-| `transitions-dev` ([transitions.dev](https://transitions.dev)) | ao animar algo novo | receitas prontas (modal, menu, toast, troca de ícone, número rolando, streaming, shake de erro, toggle, abas). |
-| `transitions-polish` ([transitions.dev](https://transitions.dev)) | depois que algo já anima | tempos e curvas na escala de tokens (abrir mais lento que fechar, hover entra rápido e sai suave, stagger). |
+| `skills/transitions-dev/` | ao animar algo novo | receitas prontas (modal, menu, toast, troca de ícone, número rolando, streaming, shake de erro, toggle, abas). |
+| `skills/transitions-polish/` | depois que algo já anima | tempos e curvas na escala de tokens (abrir mais lento que fechar, hover entra rápido e sai suave, stagger). |
 
 ## 6. Checklist de revisão visual (cada tela nova e revisão geral)
 
@@ -107,3 +107,18 @@ ofereça instalar da fonte oficial (lista no README do repositório `metodo-skil
 - Abra no navegador lateral e tire print de cada tela nova; compare com o REGRAS.md.
 - Navegador lateral escondido não roda animações de entrada: não conclua "está vazio" por isso.
 - Feedback visual dele que valha para o projeto todo ("muito texto", "hitbox grande") vira regra no REGRAS.md.
+
+## 8. Crítico visual (subagent)
+
+- **Antes de chamar:** leia `SUBAGENTS.json` na raiz do projeto (aba **Subagents** do checklist). `ativo: false` → não
+  chame. `limite: 0` → sem limite de rodadas; `limite: N` → no máximo N rodadas por tela, depois mostre o que sobrou.
+  Sem o arquivo: ativo, sem limite.
+- **O crítico recebe SÓ IMAGENS. Nunca texto do projeto:** nada de código, REGRAS.md, explicação, intenção, "isso foi de
+  propósito" ou o que mudou desde a última rodada. Texto contamina: ele passa a concordar com a sua justificativa em vez
+  de ver a tela. Ele recebe:
+  - os prints da tela (estados fixos: normal, hover, vazio, erro, claro/escuro quando houver);
+  - as imagens de referência aprovadas (amostras escolhidas, telas anteriores aprovadas);
+  - uma instrução fixa e sempre igual: *"Compare as imagens. Liste defeitos visuais em ordem de gravidade:
+    grave = qualquer um nota em 1 segundo; médio = nota olhando com atenção; menor = só lado a lado."*
+- **Subagent novo a cada rodada** (sem memória da anterior). Corrija os graves e médios e rode de novo; pare quando só
+  restar "menor" ou ao bater o limite.
