@@ -111,17 +111,32 @@ não permite redistribuir).
 ## 8. Crítico visual (subagent)
 
 - **Quando roda (se ativo na aba Subagents):** ao fim de **todo subpasso que cria ou muda tela**, antes de mostrar a ele,
-  e de novo no passo **Entrega** (metodo-projeto), com todas as telas.
-
-- **Antes de chamar:** leia `SUBAGENTS.json` na raiz do projeto (aba **Subagents** do checklist). `ativo: false` → não
-  chame. `limite: 0` → sem limite de rodadas; `limite: N` → no máximo N rodadas por tela, depois mostre o que sobrou.
-  Sem o arquivo: ativo, sem limite.
-- **O crítico recebe SÓ IMAGENS. Nunca texto do projeto:** nada de código, REGRAS.md, explicação, intenção, "isso foi de
-  propósito" ou o que mudou desde a última rodada. Texto contamina: ele passa a concordar com a sua justificativa em vez
-  de ver a tela. Ele recebe:
-  - os prints da tela (estados fixos: normal, hover, vazio, erro, claro/escuro quando houver);
-  - as imagens de referência aprovadas (amostras escolhidas, telas anteriores aprovadas);
-  - uma instrução fixa e sempre igual: *"Compare as imagens. Liste defeitos visuais em ordem de gravidade:
-    grave = qualquer um nota em 1 segundo; médio = nota olhando com atenção; menor = só lado a lado."*
-- **Subagent novo a cada rodada** (sem memória da anterior). Corrija os graves e médios e rode de novo; pare quando só
-  restar "menor" ou ao bater o limite.
+  e de novo no passo **Entrega** (metodo-projeto), com todas as telas. Pular o crítico com ele ativo é erro.
+- **Antes de chamar:** leia `SUBAGENTS.json` na raiz do projeto. `ativo: false` → não chame. `limite: 0` → sem limite
+  de rodadas; `limite: N` → no máximo N rodadas por subpasso, depois mostre o que sobrou. Sem o arquivo: ativo, sem limite.
+- **O que o agente de desenvolvimento manda (e só isso):**
+  - os **prints** da tela (normal, hover, vazio, erro, claro/escuro quando houver);
+  - uma linha neutra: `Passo 3.2 · <o que é>` (ex.: `Passo 3.2 · tela de configurações`).
+  - **Proibido mandar:** código, explicação, "fiz assim porque…", intenção, o que mudou, ou **como deveria ser**.
+    Texto do desenvolvedor contamina: o crítico passa a concordar em vez de ver a tela.
+- **O que o crítico lê sozinho (arquivos, não a conversa):** o `## Contrato` e o subpasso no `ROADMAP.md`, o
+  `design/REGRAS.md` e as imagens de referência aprovadas. Ele confere se a tela está como o Contrato, o passo e o padrão
+  pedem.
+- **Regra de aprovação: zero defeitos.** Qualquer defeito (desalinhamento, espaço fora da escala, cor/canto/fonte fora
+  do REGRAS, algo diferente do pedido no passo) → **recusado**, e o crítico devolve um texto pedindo cada correção.
+  Corrija **tudo** e rode de novo, com um subagent **novo** (sem memória da rodada anterior).
+- **Histórico:** a cada rodada, acrescente em `CRITICO-HISTORICO.md` (a aba Subagents mostra):
+  ```
+  ### 3.2 · DD/MM HH:MM · recusado        (ou aprovado)
+  Resumo: 2 defeitos — botão desalinhado; canto fora do padrão.
+  <texto completo do crítico>
+  ```
+- **No chat, depois de cada rodada,** mostre um resumo curto: passo, resultado, defeitos encontrados e o que foi corrigido.
+- **Quem aprova:**
+  - `opcoes.aprovaInterface: true` → crítico aprovou um subpasso de tela = subpasso aprovado; marque `[x]` e siga (avise
+    no chat). `false` → mostre a ele e espere o "aprovado".
+  - `opcoes.aprovaEntrega: true` → aprovação do crítico vale também no passo Entrega. `false` → a Entrega sempre passa
+    por ele.
+- **Prévia para aprovar:** um HTML só com o **subpasso atual** (`design/previa.html`, sobrescrito a cada vez; nada de
+  passos antigos na mesma página). Antes de abrir a prévia nova, **feche a aba da anterior**: no navegador lateral fica
+  só o checklist e a prévia atual.

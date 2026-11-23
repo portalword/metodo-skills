@@ -71,8 +71,8 @@ parte do plano, não do código.
    - Com interface: design primeiro (ver design-sistema). Tela com dados de exemplo antes da lógica real.
    - **Último passo é sempre `Entrega`**, com estes subpassos fixos:
      1. **Teste rápido de cada função** do Escopo (uma conferida curta por função, sem bateria longa de testes).
-     2. **Teste rápido de interface:** prints de cada tela → **crítico visual** (design-sistema §8; só imagens, ele
-        devolve o texto com as correções). Corrija graves e médios.
+     2. **Teste rápido de interface:** prints de cada tela → **crítico visual** (design-sistema §8: prints + `Passo · o que é`;
+        ele lê Contrato e REGRAS sozinho e recusa qualquer defeito). Corrija tudo até aprovar.
      3. **Conferir problemas:** releia Contrato e checklist, resolva `[ ]`/`[-]` que sobraram, comentários sem resposta.
      4. **Empacotar:** instalador/deploy + lista de entregas do "Pronto quando".
 4. Mostre o plano (checklist ao vivo, §2) e pergunte o que tirar, mudar ou acrescentar. Ajuste até ele aprovar.

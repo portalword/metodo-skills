@@ -19,7 +19,10 @@ NOTES = os.path.join(ROOT, "CHECKLIST-COMENTARIOS.md")
 REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
 FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
 SUBS = os.path.join(ROOT, "SUBAGENTS.json")  # config dos subagents (aba Subagents)
-SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0}}  # limite 0 = sem limite
+SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0,  # limite 0 = sem limite
+                                   "opcoes": {"aprovaInterface": False, "aprovaEntrega": False}}}
+CAMPOS = ("ativo", "limite", "opcoes")
+HIST = os.path.join(ROOT, "CRITICO-HISTORICO.md")  # rodadas: '### <passo> · <data> · <aprovado|recusado>' + 'Resumo: ...' + texto
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checklist.html")
 ITEM = re.compile(r"^(\s*)- \[( |x|X|-)\] (.*)$")  # [-] = pela metade / precisa de outro passo
 
@@ -76,8 +79,29 @@ def subs():
         cfg = {}
     out = {}
     for k, v in SUBS_PADRAO.items():
-        c = dict(v); c.update({x: cfg.get(k, {}).get(x, c[x]) for x in ("ativo", "limite")}); out[k] = c
+        c = json.loads(json.dumps(v)); salvo = cfg.get(k, {})
+        c["ativo"] = salvo.get("ativo", c["ativo"]); c["limite"] = salvo.get("limite", c["limite"])
+        c["opcoes"].update({o: bool(x) for o, x in salvo.get("opcoes", {}).items() if o in c["opcoes"]})
+        out[k] = c
     return out
+
+
+def historico():
+    """Rodadas do crítico, mais recentes primeiro."""
+    out, cur = [], None
+    for line in read(HIST).splitlines():
+        m = re.match(r"^### (.+?) · (.+?) · (\S+)\s*$", line)
+        if m:
+            cur = {"passo": m.group(1), "quando": m.group(2), "resultado": m.group(3).lower(), "resumo": "", "texto": ""}
+            out.append(cur)
+        elif cur is not None:
+            if line.startswith("Resumo:") and not cur["resumo"]:
+                cur["resumo"] = line[7:].strip()
+            else:
+                cur["texto"] += line + "\n"
+    for h in out:
+        h["texto"] = h["texto"].strip()
+    return out[::-1][:50]
 
 
 def notes():
@@ -124,7 +148,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/contrato":
             return self.send(200, json.dumps(contrato()))
         if self.path == "/subagents":
-            return self.send(200, json.dumps(subs()))
+            return self.send(200, json.dumps({"subs": subs(), "historico": historico()}))
         if self.path == "/design":
             return self.send(200, json.dumps({"texto": read(REGRAS)}))
         self.send(404, "{}")
@@ -149,8 +173,9 @@ class H(BaseHTTPRequestHandler):
                 return self.send(400, "{}")
             if "ativo" in data: cfg[k]["ativo"] = bool(data["ativo"])
             if "limite" in data: cfg[k]["limite"] = max(0, min(999, int(data["limite"] or 0)))
+            if data.get("opcao") in cfg[k]["opcoes"]: cfg[k]["opcoes"][data["opcao"]] = bool(data.get("valor"))
             with open(SUBS, "w", encoding="utf-8", newline="\n") as f:
-                json.dump({k: {"ativo": v["ativo"], "limite": v["limite"]} for k, v in cfg.items()}, f, ensure_ascii=False, indent=2)
+                json.dump({k: {x: v[x] for x in CAMPOS} for k, v in cfg.items()}, f, ensure_ascii=False, indent=2)
             return self.send(200, json.dumps(cfg))
         if self.path == "/comentar":
             txt = str(data.get("texto", "")).strip()

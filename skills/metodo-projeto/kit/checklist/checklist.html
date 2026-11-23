@@ -108,6 +108,19 @@
   .lim { width: 64px; background: var(--bg); color: var(--t1); border: 1px solid var(--line2); border-radius: 8px; padding: 4px 8px; font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; outline: none; }
   .lim:focus { border-color: var(--brand); }
   .sa.off .seg, .sa.off .lim { opacity: .35; pointer-events: none; }
+  .op { display: flex; align-items: center; gap: 12px; padding: 8px; border-top: 1px solid var(--line); }
+  .op span { margin-right: auto; color: var(--t2); font-size: 13px; }
+  .sec.off .op { opacity: .35; pointer-events: none; }
+  .hist { display: grid; gap: 6px; }
+  .hi { all: unset; cursor: pointer; display: grid; grid-template-columns: auto auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--s1); transition: border-color 150ms; }
+  .hi:hover { border-color: var(--brand); }
+  .hi .ps { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .hi .rs { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+  .hi .rs.aprovado { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
+  .hi .rs.recusado { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .hi .sm { color: var(--t2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hi .qd { color: var(--t3); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .hx { grid-column: 1 / -1; color: var(--t1); font-size: 13px; white-space: pre-wrap; border-top: 1px solid var(--line); padding-top: 8px; animation: rise 200ms both; }
   .vazio { color: var(--t3); text-align: center; padding: 40px 0; }
   .toast { position: fixed; bottom: 16px; left: 50%; translate: -50% 0; background: var(--s2); border: 1px solid var(--line2); padding: 8px 14px; border-radius: 12px; opacity: 0; transition: opacity 200ms; pointer-events: none; }
   .toast.on { opacity: 1; }
@@ -205,15 +218,22 @@
   }
 
   /* ── aba Subagents: SUBAGENTS.json (a IA lê antes de chamar um subagent; limite 0 = sem limite) ── */
-  let subsCfg = null;
+  let subsCfg = null, histAberto = null;
+  const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega" };
   async function desenharSubs() {
-    try { subsCfg = await (await fetch("/subagents")).json(); } catch { return; }
+    let d; try { d = await (await fetch("/subagents")).json(); } catch { return; }
+    subsCfg = d.subs;
     if (document.activeElement?.classList.contains("lim")) return;
-    $("#lista").innerHTML = '<div class="ds">' + Object.entries(subsCfg).map(([k, s], i) =>
-      `<section style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
+    const cards = Object.entries(subsCfg).map(([k, s], i) =>
+      `<section class="sec ${s.ativo ? "" : "off"}" style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
         <div class="seg"><button data-sl="${k}" data-v="0" class="${s.limite ? "" : "on"}">Sem limite</button><button data-sl="${k}" data-v="${s.limite || 3}" class="${s.limite ? "on" : ""}">Limite</button></div>
         ${s.limite ? `<input class="lim" type="number" min="1" max="999" value="${s.limite}" data-lk="${k}" aria-label="Rodadas">` : ""}
-        <button class="tg ${s.ativo ? "on" : ""}" data-sa="${k}" aria-label="Ativo"></button></div></section>`).join("") + "</div>";
+        <button class="tg ${s.ativo ? "on" : ""}" data-sa="${k}" aria-label="Ativo"></button></div>
+        ${Object.entries(s.opcoes || {}).map(([o, v]) => `<div class="op"><span>${OPCOES[o] || o}</span><button class="tg ${v ? "on" : ""}" data-sk="${k}" data-op="${o}" aria-label="${OPCOES[o] || o}"></button></div>`).join("")}
+      </section>`).join("");
+    const hist = d.historico.length ? `<section><h2>Histórico do crítico<span>${d.historico.length}</span></h2><div class="hist">${d.historico.map((x, i) =>
+      `<button class="hi" data-hi="${i}"><span class="ps">${esc(x.passo)}</span><span class="rs ${esc(x.resultado)}">${esc(x.resultado)}</span><span class="sm">${esc(x.resumo)}</span><span class="qd">${esc(x.quando)}</span>${histAberto === i ? `<div class="hx">${esc(x.texto || x.resumo)}</div>` : ""}</button>`).join("")}</div></section>` : "";
+    $("#lista").innerHTML = '<div class="ds">' + cards + hist + "</div>";
   }
 
   /* ── aba Contrato: bloco "## Contrato" do ROADMAP.md, numa folha pautada ── */
@@ -270,6 +290,8 @@
     const sw = e.target.closest(".sw"); if (sw) { navigator.clipboard?.writeText(sw.dataset.hex); toast(`${sw.dataset.hex} copiado`); return; }
     const t = e.target.closest("button"); if (!t) return;
     if (t.dataset.sa) { await post("/subagents", { id: t.dataset.sa, ativo: !subsCfg[t.dataset.sa].ativo }); return desenharSubs(); }
+    if (t.dataset.sk) { await post("/subagents", { id: t.dataset.sk, opcao: t.dataset.op, valor: !subsCfg[t.dataset.sk].opcoes[t.dataset.op] }); return desenharSubs(); }
+    if (t.dataset.hi !== undefined) { histAberto = histAberto === +t.dataset.hi ? null : +t.dataset.hi; return desenharSubs(); }
     if (t.dataset.sl) { await post("/subagents", { id: t.dataset.sl, limite: +t.dataset.v }); return desenharSubs(); }
     if (t.dataset.l !== undefined) {
       const prox = { falta: "feito", feito: "meio", meio: "falta" }[t.dataset.e];
