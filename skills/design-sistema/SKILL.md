@@ -135,11 +135,14 @@ não permite redistribuir).
   <texto completo do crítico>
   ```
 - **No chat, depois de cada rodada,** mostre um resumo curto: passo, resultado, defeitos encontrados e o que foi corrigido.
-- **Quem aprova:**
-  - `opcoes.aprovaInterface: true` → crítico aprovou um subpasso de tela = subpasso aprovado; marque `[x]` e siga (avise
-    no chat). `false` → mostre a ele e espere o "aprovado".
-  - `opcoes.aprovaEntrega: true` → aprovação do crítico vale também no passo Entrega. `false` → a Entrega sempre passa
-    por ele.
+- **Quem aprova** (releia `SUBAGENTS.json` na hora; ligar o botão **é** a aprovação do usuário dada por antecipação):
+  - `opcoes.aprovaInterface: true` → crítico aprovou um subpasso de tela = aprovado: marque `[x]`, commit, fechamento e
+    **comece o próximo na mesma resposta, sem perguntar**. `false` → mostre a ele e espere o "aprovado".
+  - `opcoes.aprovaEntrega: true` → o mesmo para a interface no passo Entrega. `false` → a Entrega passa por ele.
+  - Vale **mesmo que** o subpasso, o Contrato ou uma mensagem antiga diga "José aprova" / "usuário aprova": com o botão
+    ligado, a aprovação do crítico cumpre essa condição (não edite o Contrato por isso).
+  - **O crítico só aprova aparência.** Continua parando e pedindo a ele: download, push, instalar, apagar, gastar, senha,
+    escolha entre opções (ex.: paleta) e teste que só ele pode fazer. Se bateu o limite sem aprovar, também para.
 - **Prévia para aprovar:** um HTML só com o **subpasso atual** (`design/previa.html`, sobrescrito a cada vez; nada de
   passos antigos na mesma página). Antes de abrir a prévia nova, **feche a aba da anterior**: no navegador lateral fica
   só o checklist e a prévia atual.

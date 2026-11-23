@@ -160,12 +160,15 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
    paramos) e o `PLANOS-FUTUROS.md` (o que NÃO entra agora). Mensagens antigas do chat são só apoio; se brigarem com o
    Contrato, vale o Contrato.
 1. **Um subpasso por vez:** faça → confira "feito de verdade" (§4) → mostre → pare com "Sigo para o X?".
+   **Exceção — aprovação pelo crítico:** subpasso de tela com `aprovaInterface: true` (ou da Entrega com
+   `aprovaEntrega: true`) que o crítico aprovou **não para**: vale como o "aprovado" dele (item 2), mande o fechamento
+   (item 5) sem perguntar e já faça o próximo na mesma resposta (design-sistema §8, "Quem aprova").
 2. **"Aprovado" / "próximo" / "seguir"** = marque `[x]`, faça um commit (`1.2 nome do subpasso`) e **já faça o próximo**
    na mesma resposta. Não enviar para a internet (push) sem ele pedir.
 3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → `PLANOS-FUTUROS.md` (Contrato travado, §1).
 4. **Ao fechar um subpasso (e sempre ao fechar um Passo):** releia o ROADMAP inteiro e o `CHECKLIST-COMENTARIOS.md`;
    liste em 1–3 linhas o que ficou `[ ]`/`[-]` em passos anteriores e comentários sem resposta, e pergunte se resolve
-   agora ou segue. Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
+   agora ou segue (aprovado pelo crítico: só liste e siga). Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
 5. **Fechamento de cada subpasso (sempre neste formato, em texto grande):**
    ```
    ## 1.2 — Finalizado
