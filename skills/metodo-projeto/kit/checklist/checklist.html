@@ -222,7 +222,7 @@
   const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega" };
   async function desenharSubs() {
     let d; try { d = await (await fetch("/subagents")).json(); } catch { return; }
-    subsCfg = d.subs;
+    subsCfg = d.subs || d; d.historico = d.historico || []; // servidor antigo devolve só a config
     if (document.activeElement?.classList.contains("lim")) return;
     const cards = Object.entries(subsCfg).map(([k, s], i) =>
       `<section class="sec ${s.ativo ? "" : "off"}" style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
