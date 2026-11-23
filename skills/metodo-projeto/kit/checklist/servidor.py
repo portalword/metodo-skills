@@ -90,6 +90,15 @@ def subs():
     return out
 
 
+def atual():
+    """O que cada subagent está fazendo agora (gravado por texto.py agente ...)."""
+    try:
+        d = json.loads(read(os.path.join(ROOT, "SUBAGENTS-ATUAL.json")) or "{}")
+        return {k: {"estado": str(v["estado"]), "passo": str(v["passo"]), "desde": float(v["desde"])} for k, v in d.items() if k in SUBS_PADRAO}
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
 def historico(quem):
     """Rodadas do subagent, mais recentes primeiro."""
     out, cur = [], None
@@ -152,7 +161,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/contrato":
             return self.send(200, json.dumps(contrato()))
         if self.path == "/subagents":
-            return self.send(200, json.dumps({"subs": subs(), "historicos": {k: historico(k) for k in HISTS}}))
+            return self.send(200, json.dumps({"subs": subs(), "historicos": {k: historico(k) for k in HISTS}, "atual": atual()}))
         if self.path == "/design":
             return self.send(200, json.dumps({"texto": read(REGRAS)}))
         self.send(404, "{}")

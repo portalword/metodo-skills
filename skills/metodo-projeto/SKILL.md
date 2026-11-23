@@ -213,6 +213,9 @@ campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTe
 - **Como chamar:** agente `testador`, `model` = o `modelo` da config, e o pedido é **exatamente** `Pasta: <caminho>` +
   `Passo X.Y`. Proibido mandar explicação, motivo, o que mudou, como testar ou resultado anterior. Nova rodada = agente
   novo (nunca continuar o anterior). Sem esse agente disponível: diga a ele; não teste no lugar dele.
+- **Status na aba (crítico e Testador), sempre:** `python "<pasta desta skill>/kit/checklist/texto.py" "<projeto>" agente
+  <critico-visual|testador> <estado> <passo>`: `analisando 13.2` logo antes de chamar · `corrigindo 13.2` ao receber recusa ·
+  `parado` ao aprovar, cair, interromper ou esperar o usuário. Ao retomar um projeto sem agente rodando, ponha `parado`.
 - **Desculpa não é aceita.** Recusado → corrija tudo e chame um novo, até aprovar ou bater o `limite` (0 = sem limite; ao
   bater, pare e mostre o que sobrou). Acha o teste errado? Quem decide é o usuário. Nunca mexa em `~/.claude/testador/`.
 - **Quando o resultado chegar** (crítico ou Testador): releia o `SUBAGENTS.json` **antes** de fechar a resposta ou perguntar;

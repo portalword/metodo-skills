@@ -3,10 +3,11 @@ Versão em texto do checklist ao vivo (para IAs que não abrem navegador).
 
 Uso:  python texto.py "<pasta do projeto>" <comando> [id] [texto]
 Comandos: checklist | falta | feitos | atual | design | futuro | comentarios
+          agente <critico-visual|testador> <analisando|corrigindo|parado> [passo]
           marcar <id> | metade <id> | desmarcar <id> | comentar <id> <texto>
 Lê e escreve os mesmos arquivos da página (ROADMAP.md, CHECKLIST-COMENTARIOS.md, design/REGRAS.md, PLANOS-FUTUROS.md).
 """
-import os, re, sys, datetime
+import os, re, sys, datetime, json, time
 
 sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.getcwd()
@@ -107,6 +108,19 @@ elif CMD in ("futuro", "futuros"):
 elif CMD in ("comentarios", "comentários"):
     t = read(NOTES)
     print(t.split("\n", 3)[-1].strip() if t.strip() else "Sem comentários.")
+elif CMD == "agente" and len(ARGS) >= 2 and ARGS[0] in ("critico-visual", "testador") and (ARGS[1] == "parado" or (ARGS[1] in ("analisando", "corrigindo") and len(ARGS) > 2)):
+    p = os.path.join(ROOT, "SUBAGENTS-ATUAL.json")
+    try:
+        d = json.loads(read(p) or "{}")
+    except ValueError:
+        d = {}
+    d.pop(ARGS[0], None)
+    if ARGS[1] != "parado":
+        d[ARGS[0]] = {"estado": ARGS[1], "passo": " ".join(ARGS[2:]), "desde": time.time()}
+    with open(p + ".tmp", "w", encoding="utf-8", newline="\n") as f:
+        json.dump(d, f, ensure_ascii=False)
+    os.replace(p + ".tmp", p)
+    print(*ARGS)
 elif CMD == "marcar" and ARGS:
     set_state(ARGS[0], "x")
 elif CMD == "metade" and ARGS:

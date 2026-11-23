@@ -110,6 +110,13 @@
   .sa.off .seg, .sa.off .lim { opacity: .35; pointer-events: none; }
   .op { display: flex; align-items: center; gap: 12px; padding: 8px; border-top: 1px solid var(--line); }
   .op span { margin-right: auto; color: var(--t2); font-size: 13px; }
+  .st { display: flex; align-items: center; gap: 8px; padding: 0 8px 10px; font-size: 13px; color: var(--t3); }
+  .st i { width: 8px; height: 8px; border-radius: 99px; background: var(--t3); }
+  .st b { color: var(--t1); font-variant-numeric: tabular-nums; }
+  .st span { margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .st.analisando { color: var(--brand); } .st.analisando i { background: var(--brand); animation: pulsa 1.4s ease-in-out infinite; }
+  .st.corrigindo { color: var(--warn); } .st.corrigindo i { background: var(--warn); animation: pulsa 1.4s ease-in-out infinite; }
+  @keyframes pulsa { 50% { opacity: .25; transform: scale(.7); } }
   .sec.off .op { opacity: .35; pointer-events: none; }
   .hist { display: grid; gap: 6px; }
   .hi { all: unset; cursor: pointer; display: grid; grid-template-columns: auto auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--s1); transition: border-color 150ms; }
@@ -218,18 +225,25 @@
   }
 
   /* ── aba Subagents: SUBAGENTS.json (a IA lê antes de chamar um subagent; limite 0 = sem limite) ── */
-  let subsCfg = null, histAberto = null;
+  let subsCfg = null, histAberto = null, subsChave = null;
   const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega", aprovaFuncao: "Pode aprovar função", testaEntrega: "Teste de entrega", semTestes: "Aprovar tudo sem testes" };
   const ROTULO = { aprovado: "aprovado", "sem-teste": "aprovado sem testar" };
   async function desenharSubs() {
     let d; try { d = await (await fetch("/subagents")).json(); } catch { return; }
+    const at = d.atual || {}, ST = { analisando: "Analisando", corrigindo: "Corrigindo" };
+    const ha = (t) => { const m = Math.max(0, Math.floor((Date.now() / 1000 - t) / 60)); return m < 1 ? "agora" : m < 60 ? `há ${m} min` : `há ${Math.floor(m / 60)} h ${m % 60} min`; };
+    const chave = JSON.stringify(d) + histAberto + Object.values(at).map((x) => ha(x.desde));
+    if (chave === subsChave && document.querySelector(".st")) return; // nada mudou: não repete a animação
+    const mesma = !!document.querySelector(".st");
     subsCfg = d.subs || d; // servidor antigo devolve só a config
     if (document.activeElement?.classList.contains("lim")) return;
+    subsChave = chave;
     const cards = Object.entries(subsCfg).map(([k, s], i) =>
       `<section class="sec ${s.ativo ? "" : "off"}" style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
         <div class="seg"><button data-sl="${k}" data-v="0" class="${s.limite ? "" : "on"}">Sem limite</button><button data-sl="${k}" data-v="${s.limite || 3}" class="${s.limite ? "on" : ""}">Limite</button></div>
         ${s.limite ? `<input class="lim" type="number" min="1" max="999" value="${s.limite}" data-lk="${k}" aria-label="Rodadas">` : ""}
         <button class="tg ${s.ativo ? "on" : ""}" data-sa="${k}" aria-label="Ativo"></button></div>
+        ${at[k] && ST[at[k].estado] ? `<div class="st ${at[k].estado}"><i></i>${ST[at[k].estado]} <b>${esc(at[k].passo)}</b><span>${ha(at[k].desde)}</span></div>` : `<div class="st"><i></i>Parado</div>`}
         ${s.modelo ? `<div class="op"><span>Modelo</span><div class="seg">${["haiku", "sonnet", "opus"].map((m) => `<button data-sm="${k}" data-v="${m}" class="${s.modelo === m ? "on" : ""}">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}</div></div>` : ""}
         ${Object.entries(s.opcoes || {}).map(([o, v]) => `<div class="op"><span>${OPCOES[o] || o}</span><button class="tg ${v ? "on" : ""}" data-sk="${k}" data-op="${o}" aria-label="${OPCOES[o] || o}"></button></div>`).join("")}
       </section>`).join("");
@@ -240,7 +254,9 @@
       return hs.length ? `<section><h2>Histórico · ${esc(subsCfg[k]?.nome || k)}<span>${hs.length}</span></h2><div class="hist">${hs.map((x) => { const id = k + "|" + x.passo;
         return `<button class="hi" data-hi="${esc(id)}"><span class="ps">${esc(x.passo)}</span><span class="rs ${esc(x.resultado)}">${ROTULO[x.resultado]}</span><span class="sm">${esc(x.resumo)}</span><span class="qd">${esc(x.quando)}</span>${histAberto === id ? `<div class="hx">${esc(x.texto || x.resumo)}</div>` : ""}</button>`; }).join("")}</div></section>` : "";
     }).join("");
+    if (filtro !== "subagents") return;
     $("#lista").innerHTML = '<div class="ds">' + cards + hist + "</div>";
+    if (mesma) document.querySelectorAll("#lista section").forEach((x) => (x.style.animation = "none"));
   }
 
   /* ── aba Contrato: bloco "## Contrato" do ROADMAP.md, numa folha pautada ── */
@@ -326,7 +342,7 @@
   tema(t0 ?? (matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "escuro"));
   document.querySelector("#ir").addEventListener("click", () => irAtual());
   document.querySelector("#tema").addEventListener("click", () => tema(document.documentElement.dataset.tema === "claro" ? "escuro" : "claro"));
-  carregar(); setInterval(carregar, 2000);
+  carregar(); setInterval(() => { carregar(); if (filtro === "subagents") desenharSubs(); }, 2000);
 </script>
 </body>
 </html>
