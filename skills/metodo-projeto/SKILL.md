@@ -171,7 +171,7 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → `PLANOS-FUTUROS.md` (Contrato travado, §1).
 4. **Ao fechar um subpasso (e sempre ao fechar um Passo):** releia o ROADMAP inteiro e o `CHECKLIST-COMENTARIOS.md`;
    liste em 1–3 linhas o que ficou `[ ]`/`[-]` em passos anteriores e comentários sem resposta, e pergunte se resolve
-   agora ou segue (aprovado pelo crítico: só liste e siga). Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
+   agora ou segue (aprovado pelo crítico ou Testador: só liste e siga). Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
 5. **Fechamento de cada subpasso (sempre neste formato, em texto grande):**
    ```
    ## 1.2 — Finalizado
@@ -215,6 +215,15 @@ campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTe
   novo (nunca continuar o anterior). Sem esse agente disponível: diga a ele; não teste no lugar dele.
 - **Desculpa não é aceita.** Recusado → corrija tudo e chame um novo, até aprovar ou bater o `limite` (0 = sem limite; ao
   bater, pare e mostre o que sobrou). Acha o teste errado? Quem decide é o usuário. Nunca mexa em `~/.claude/testador/`.
+- **Quando o resultado chegar** (crítico ou Testador): releia o `SUBAGENTS.json` **antes** de fechar a resposta ou perguntar;
+  ele pode ter ligado o botão durante o teste. Botão ligado + aprovado → nenhuma pergunta nem botão de aprovação: marque e
+  comece o próximo. Enquanto o agente roda, termine com uma linha: `Testando 13.1 — sigo sozinho quando o resultado chegar`.
+- **Correção não vira laço:** no máximo 3 tentativas **ou** 15 min por defeito. Passou disso → pare, deixe a melhor versão,
+  e mostre: o defeito, o que conseguiu (com números) e 2 saídas (ex.: aceitar como limite conhecido · tentar mais). Aceitar
+  é só o usuário; grave `aceito pelo usuário` no resumo. Nunca mude o teste para ele passar.
+- **Trabalho longo não fica mudo:** antes de comando de mais de 2 min, diga em uma linha o que roda e quanto demora; rode em
+  segundo plano e teste primeiro pequeno (poucos casos), o completo só no fim.
+- **Processos:** encerre só os que você abriu, pelo PID. Nunca `taskkill /IM` (fecha o programa do usuário junto).
 - **`precisa-de-voce`** → pare e mostre o que só ele pode testar. Não é aprovação.
 - **Quem aprova:** `aprovaFuncao: true` → aprovado pelo Testador = aprovado por ele (§3, exceção). `false` → mostre e espere.
 - **Entrega:** `testaEntrega: true` → chame com `Entrega` (e os passos que estão "sem-teste": `Entrega · 12.2, 13.1`) no
