@@ -20,10 +20,12 @@ REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
 FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
 SUBS = os.path.join(ROOT, "SUBAGENTS.json")  # config dos subagents (aba Subagents)
 SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0, "modelo": "sonnet",  # limite 0 = sem limite
-                                   "opcoes": {"aprovaInterface": False, "aprovaEntrega": False}}}
+                                   "opcoes": {"aprovaInterface": False, "aprovaEntrega": False}},
+               "testador": {"nome": "Testador", "ativo": True, "limite": 3, "modelo": "sonnet",
+                            "opcoes": {"aprovaFuncao": False, "testaEntrega": True, "semTestes": False}}}
 MODELOS = ("haiku", "sonnet", "opus")
 CAMPOS = ("ativo", "limite", "modelo", "opcoes")
-HIST = os.path.join(ROOT, "CRITICO-HISTORICO.md")  # rodadas: '### <passo> · <data> · <aprovado|recusado>' + 'Resumo: ...' + texto
+HISTS = {"critico-visual": os.path.join(ROOT, "CRITICO-HISTORICO.md"), "testador": os.path.join(ROOT, "TESTADOR-HISTORICO.md")}  # rodadas: '### <passo> · <data> · <aprovado|recusado>' + 'Resumo: ...' + texto
 PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "checklist.html")
 ITEM = re.compile(r"^(\s*)- \[( |x|X|-)\] (.*)$")  # [-] = pela metade / precisa de outro passo
 
@@ -88,11 +90,11 @@ def subs():
     return out
 
 
-def historico():
-    """Rodadas do crítico, mais recentes primeiro."""
+def historico(quem):
+    """Rodadas do subagent, mais recentes primeiro."""
     out, cur = [], None
-    for line in read(HIST).splitlines():
-        m = re.match(r"^### (.+?) · (.+?) · (\S+)\s*$", line)
+    for line in read(HISTS[quem]).splitlines():
+        m = re.match(r"^### (.+?) · (.+?) · (aprovado|recusado|sem-teste|precisa-de-voce)(?=\s|$).*$", line)
         if m:
             cur = {"passo": m.group(1), "quando": m.group(2), "resultado": m.group(3).lower(), "resumo": "", "texto": ""}
             out.append(cur)
@@ -103,7 +105,7 @@ def historico():
                 cur["texto"] += line + "\n"
     for h in out:
         h["texto"] = h["texto"].strip()
-    return out[::-1][:50]
+    return out[::-1]
 
 
 def notes():
@@ -150,7 +152,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/contrato":
             return self.send(200, json.dumps(contrato()))
         if self.path == "/subagents":
-            return self.send(200, json.dumps({"subs": subs(), "historico": historico()}))
+            return self.send(200, json.dumps({"subs": subs(), "historicos": {k: historico(k) for k in HISTS}}))
         if self.path == "/design":
             return self.send(200, json.dumps({"texto": read(REGRAS)}))
         self.send(404, "{}")

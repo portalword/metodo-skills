@@ -33,6 +33,16 @@ Your `ROADMAP.md` becomes a page in a side tab (`http://127.0.0.1:8765`) that bo
 - Light and dark mode.
 - Runs on plain Python (standard library only) and listens only on `127.0.0.1`.
 
+## Subagents
+
+| Agent | What it does |
+|---|---|
+| **Visual critic** | Sees only screenshots, the contract and the design rules. Any defect = rejected. |
+| **Tester** (`testador`) | Gets only the project folder and the step. Uses the program in a copy, tries to break it and answers with proof. No excuses: the developer can only fix. |
+
+The **Subagents** tab sets on/off, round limit, model, self-approval, delivery test, and "approve everything without tests"
+(recorded as *approved without testing*).
+
 ## Chat commands
 
 Every time the checklist opens (or when the AI can't open a browser) it sends this list — nothing else:

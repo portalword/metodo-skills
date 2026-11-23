@@ -6,12 +6,14 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 TARGET="${1:-$HOME/.claude}"
 case "$TARGET" in --no-third-party) TARGET="$HOME/.claude"; SKIP=1;; esac
 [ "$2" = "--no-third-party" ] && SKIP=1
-mkdir -p "$TARGET/skills" "$TARGET/commands"
+mkdir -p "$TARGET/skills" "$TARGET/commands" "$TARGET/agents"
 
 echo "Installing metodo-projeto and design-sistema into $TARGET/skills"
 cp -R "$HERE/skills/metodo-projeto" "$HERE/skills/design-sistema" "$TARGET/skills/"
 echo "Installing chat commands into $TARGET/commands"
 cp "$HERE"/commands/*.md "$TARGET/commands/"
+echo "Installing the testador agent into $TARGET/agents"
+cp "$HERE"/agents/*.md "$TARGET/agents/"
 
 [ -n "$SKIP" ] && { echo "Done (third-party skills skipped)."; exit 0; }
 

@@ -70,7 +70,8 @@ parte do plano, não do código.
    - Passos numerados do começo à entrega; subpassos `- [ ] 1.1 texto` pequenos o bastante para mostrar e aprovar.
    - Com interface: design primeiro (ver design-sistema). Tela com dados de exemplo antes da lógica real.
    - **Último passo é sempre `Entrega`**, com estes subpassos fixos:
-     1. **Teste rápido de cada função** do Escopo (uma conferida curta por função, sem bateria longa de testes).
+     1. **Teste rápido de cada função** do Escopo (uma conferida curta por função, sem bateria longa;
+        com `testaEntrega`, quem faz é o Testador, §4.1).
      2. **Teste rápido de interface:** prints de cada tela → **crítico visual** (design-sistema §8: prints + `Passo · o que é`;
         ele lê Contrato e REGRAS sozinho e recusa qualquer defeito). Corrija tudo até aprovar.
      3. **Conferir problemas:** releia Contrato e checklist, resolva `[ ]`/`[-]` que sobraram, comentários sem resposta.
@@ -131,7 +132,7 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
   leia o arquivo; para cada bloco sem `[resolvido]`: responda no chat **e** escreva abaixo `> IA: <resposta curta>` e, se
   resolveu, `[resolvido]`. Pedido de ajuste vira subpasso; troca de função vai para `PLANOS-FUTUROS.md` (§1).
 - **Aba Subagents:** liga/desliga cada subagent e define limite de rodadas (ou sem limite); grava em `SUBAGENTS.json`.
-  Leia esse arquivo antes de chamar qualquer subagent listado ali (ex.: crítico visual, ver design-sistema §8).
+  Leia esse arquivo antes de chamar qualquer subagent listado ali (crítico visual: design-sistema §8; Testador: §4.1).
 - **Comandos no chat (sempre, com ou sem navegador):** ao abrir o checklist — ou se não conseguir abrir — mande esta
   mensagem e nada mais (sem explicar):
   ```
@@ -163,6 +164,8 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
    **Exceção — aprovação pelo crítico:** subpasso de tela com `aprovaInterface: true` (ou da Entrega com
    `aprovaEntrega: true`) que o crítico aprovou **não para**: vale como o "aprovado" dele (item 2), mande o fechamento
    (item 5) sem perguntar e já faça o próximo na mesma resposta (design-sistema §8, "Quem aprova").
+   O mesmo vale para subpasso com função aprovado pelo Testador com `aprovaFuncao: true` (§4.1). Subpasso com tela **e**
+   função só segue sozinho com os dois aprovando.
 2. **"Aprovado" / "próximo" / "seguir"** = marque `[x]`, faça um commit (`1.2 nome do subpasso`) e **já faça o próximo**
    na mesma resposta. Não enviar para a internet (push) sem ele pedir.
 3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → `PLANOS-FUTUROS.md` (Contrato travado, §1).
@@ -199,6 +202,34 @@ mensagem clara se falhar, e mostrar o gasto quando houver cota/custo.
 
 **Dados que o programa guarda sozinho:** só vira "verdade" o que veio do próprio usuário; conteúdo de fundo (vídeo, áudio
 ambiente, páginas, arquivos de terceiros) não. O usuário consegue ver, editar e apagar o que foi guardado.
+
+## 4.1 Testador (subagent de funções)
+
+Agente fixo `testador` (`~/.claude/agents/testador.md`). Config em `SUBAGENTS.json` → `testador` (aba Subagents); sem o
+campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTestes` desligados. Releia antes de cada uso.
+
+- **Quando:** fim de todo subpasso que cria ou muda função (só tela = só o crítico). `ativo: false` → não chame, não grave
+  histórico e espere o "aprovado" dele.
+- **Como chamar:** agente `testador`, `model` = o `modelo` da config, e o pedido é **exatamente** `Pasta: <caminho>` +
+  `Passo X.Y`. Proibido mandar explicação, motivo, o que mudou, como testar ou resultado anterior. Nova rodada = agente
+  novo (nunca continuar o anterior). Sem esse agente disponível: diga a ele; não teste no lugar dele.
+- **Desculpa não é aceita.** Recusado → corrija tudo e chame um novo, até aprovar ou bater o `limite` (0 = sem limite; ao
+  bater, pare e mostre o que sobrou). Acha o teste errado? Quem decide é o usuário. Nunca mexa em `~/.claude/testador/`.
+- **`precisa-de-voce`** → pare e mostre o que só ele pode testar. Não é aprovação.
+- **Quem aprova:** `aprovaFuncao: true` → aprovado pelo Testador = aprovado por ele (§3, exceção). `false` → mostre e espere.
+- **Entrega:** `testaEntrega: true` → chame com `Entrega` (e os passos que estão "sem-teste": `Entrega · 12.2, 13.1`) no
+  lugar do teste rápido de funções. `false` → faça você o teste rápido. O fim da Entrega passa pelo usuário.
+- **`semTestes: true`** (só o usuário liga; com o Testador ativo, vence as outras opções) → não chame o Testador, nem
+  na Entrega; grave `sem-teste`, marque `[x]` e siga. Nunca escreva "testado" ou "funciona": é **aprovado sem testar**.
+  Na Entrega, liste os passos sem teste. Se depois ele desligar o botão, um teste posterior entra no histórico.
+- **Não libera** download, push, instalar, apagar, gastar, senha nem escolha entre opções: continua pedindo a ele.
+- **Histórico:** a cada rodada, acrescente em `TESTADOR-HISTORICO.md` o texto do Testador sem mudar nada (a aba mostra só
+  o último de cada passo, se `aprovado` ou `sem-teste`), e resuma no chat em uma linha:
+  ```
+  ### 12.2 · DD/MM HH:MM · aprovado        (recusado · precisa-de-voce · sem-teste)
+  Resumo: 9 casos, 0 defeitos.
+  <texto completo; em sem-teste: "Aprovado sem testar (botão ligado).">
+  ```
 
 ## 5. Segurança
 

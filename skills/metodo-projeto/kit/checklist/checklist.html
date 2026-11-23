@@ -117,7 +117,7 @@
   .hi .ps { font-weight: 700; font-variant-numeric: tabular-nums; }
   .hi .rs { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
   .hi .rs.aprovado { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
-  .hi .rs.recusado { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .hi .rs.sem-teste { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
   .hi .sm { color: var(--t2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hi .qd { color: var(--t3); font-size: 11px; font-variant-numeric: tabular-nums; }
   .hx { grid-column: 1 / -1; color: var(--t1); font-size: 13px; white-space: pre-wrap; border-top: 1px solid var(--line); padding-top: 8px; animation: rise 200ms both; }
@@ -219,10 +219,11 @@
 
   /* ── aba Subagents: SUBAGENTS.json (a IA lê antes de chamar um subagent; limite 0 = sem limite) ── */
   let subsCfg = null, histAberto = null;
-  const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega" };
+  const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega", aprovaFuncao: "Pode aprovar função", testaEntrega: "Teste de entrega", semTestes: "Aprovar tudo sem testes" };
+  const ROTULO = { aprovado: "aprovado", "sem-teste": "aprovado sem testar" };
   async function desenharSubs() {
     let d; try { d = await (await fetch("/subagents")).json(); } catch { return; }
-    subsCfg = d.subs || d; d.historico = d.historico || []; // servidor antigo devolve só a config
+    subsCfg = d.subs || d; // servidor antigo devolve só a config
     if (document.activeElement?.classList.contains("lim")) return;
     const cards = Object.entries(subsCfg).map(([k, s], i) =>
       `<section class="sec ${s.ativo ? "" : "off"}" style="animation-delay:${i * 40}ms"><div class="sa ${s.ativo ? "" : "off"}"><b>${esc(s.nome)}</b>
@@ -232,8 +233,13 @@
         ${s.modelo ? `<div class="op"><span>Modelo</span><div class="seg">${["haiku", "sonnet", "opus"].map((m) => `<button data-sm="${k}" data-v="${m}" class="${s.modelo === m ? "on" : ""}">${m[0].toUpperCase() + m.slice(1)}</button>`).join("")}</div></div>` : ""}
         ${Object.entries(s.opcoes || {}).map(([o, v]) => `<div class="op"><span>${OPCOES[o] || o}</span><button class="tg ${v ? "on" : ""}" data-sk="${k}" data-op="${o}" aria-label="${OPCOES[o] || o}"></button></div>`).join("")}
       </section>`).join("");
-    const hist = d.historico.length ? `<section><h2>Histórico do crítico<span>${d.historico.length}</span></h2><div class="hist">${d.historico.map((x, i) =>
-      `<button class="hi" data-hi="${i}"><span class="ps">${esc(x.passo)}</span><span class="rs ${esc(x.resultado)}">${esc(x.resultado)}</span><span class="sm">${esc(x.resumo)}</span><span class="qd">${esc(x.quando)}</span>${histAberto === i ? `<div class="hx">${esc(x.texto || x.resumo)}</div>` : ""}</button>`).join("")}</div></section>` : "";
+    // um por passo, só se a última rodada dele passou (o arquivo guarda todas, mais recente primeiro)
+    const hist = Object.entries(d.historicos || { "critico-visual": d.historico || [] }).map(([k, todas]) => {
+      const vistos = new Set();
+      const hs = todas.filter((x) => !vistos.has(x.passo) && vistos.add(x.passo)).filter((x) => ROTULO[x.resultado]);
+      return hs.length ? `<section><h2>Histórico · ${esc(subsCfg[k]?.nome || k)}<span>${hs.length}</span></h2><div class="hist">${hs.map((x) => { const id = k + "|" + x.passo;
+        return `<button class="hi" data-hi="${esc(id)}"><span class="ps">${esc(x.passo)}</span><span class="rs ${esc(x.resultado)}">${ROTULO[x.resultado]}</span><span class="sm">${esc(x.resumo)}</span><span class="qd">${esc(x.quando)}</span>${histAberto === id ? `<div class="hx">${esc(x.texto || x.resumo)}</div>` : ""}</button>`; }).join("")}</div></section>` : "";
+    }).join("");
     $("#lista").innerHTML = '<div class="ds">' + cards + hist + "</div>";
   }
 
@@ -292,7 +298,7 @@
     const t = e.target.closest("button"); if (!t) return;
     if (t.dataset.sa) { await post("/subagents", { id: t.dataset.sa, ativo: !subsCfg[t.dataset.sa].ativo }); return desenharSubs(); }
     if (t.dataset.sk) { await post("/subagents", { id: t.dataset.sk, opcao: t.dataset.op, valor: !subsCfg[t.dataset.sk].opcoes[t.dataset.op] }); return desenharSubs(); }
-    if (t.dataset.hi !== undefined) { histAberto = histAberto === +t.dataset.hi ? null : +t.dataset.hi; return desenharSubs(); }
+    if (t.dataset.hi !== undefined) { histAberto = histAberto === t.dataset.hi ? null : t.dataset.hi; return desenharSubs(); }
     if (t.dataset.sm) { await post("/subagents", { id: t.dataset.sm, modelo: t.dataset.v }); return desenharSubs(); }
     if (t.dataset.sl) { await post("/subagents", { id: t.dataset.sl, limite: +t.dataset.v }); return desenharSubs(); }
     if (t.dataset.l !== undefined) {

@@ -8,13 +8,16 @@ $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $skills = Join-Path $Target "skills"
 $commands = Join-Path $Target "commands"
-New-Item -ItemType Directory -Force $skills, $commands | Out-Null
+$agents = Join-Path $Target "agents"
+New-Item -ItemType Directory -Force $skills, $commands, $agents | Out-Null
 
 Write-Host "Installing metodo-projeto and design-sistema into $skills"
 Copy-Item -Recurse -Force (Join-Path $here "skills\metodo-projeto") $skills
 Copy-Item -Recurse -Force (Join-Path $here "skills\design-sistema") $skills
 Write-Host "Installing chat commands into $commands"
 Copy-Item -Force (Join-Path $here "commands\*.md") $commands
+Write-Host "Installing the testador agent into $agents"
+Copy-Item -Force (Join-Path $here "agents\*.md") $agents
 
 if ($NoThirdParty) { Write-Host "Done (third-party skills skipped)."; exit 0 }
 
