@@ -124,7 +124,7 @@
   .hi .ps { font-weight: 700; font-variant-numeric: tabular-nums; }
   .hi .rs { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
   .hi .rs.aprovado { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok); }
-  .hi .rs.sem-teste { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .hi .rs.sem-teste, .hi .rs.aceito { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
   .hi .sm { color: var(--t2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hi .qd { color: var(--t3); font-size: 11px; font-variant-numeric: tabular-nums; }
   .hx { grid-column: 1 / -1; color: var(--t1); font-size: 13px; white-space: pre-wrap; border-top: 1px solid var(--line); padding-top: 8px; animation: rise 200ms both; }
@@ -227,7 +227,7 @@
   /* ── aba Subagents: SUBAGENTS.json (a IA lê antes de chamar um subagent; limite 0 = sem limite) ── */
   let subsCfg = null, histAberto = null, subsChave = null;
   const OPCOES = { aprovaInterface: "Pode aprovar interface", aprovaEntrega: "Pode aprovar entrega", aprovaFuncao: "Pode aprovar função", testaEntrega: "Teste de entrega", semTestes: "Aprovar tudo sem testes" };
-  const ROTULO = { aprovado: "aprovado", "sem-teste": "aprovado sem testar" };
+  const ROTULO = { aprovado: "aprovado", "sem-teste": "aprovado sem testar", aceito: "aceito por você" };
   async function desenharSubs() {
     let d; try { d = await (await fetch("/subagents")).json(); } catch { return; }
     const at = d.atual || {}, ST = { analisando: "Analisando", corrigindo: "Corrigindo" };

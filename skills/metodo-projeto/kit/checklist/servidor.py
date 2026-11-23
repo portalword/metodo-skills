@@ -103,7 +103,7 @@ def historico(quem):
     """Rodadas do subagent, mais recentes primeiro."""
     out, cur = [], None
     for line in read(HISTS[quem]).splitlines():
-        m = re.match(r"^### (.+?) · (.+?) · (aprovado|recusado|sem-teste|precisa-de-voce)(?=\s|$).*$", line)
+        m = re.match(r"^### (.+?) · (.+?) · (aprovado|recusado|sem-teste|aceito|precisa-de-voce)(?=\s|$).*$", line)
         if m:
             cur = {"passo": m.group(1), "quando": m.group(2), "resultado": m.group(3).lower(), "resumo": "", "texto": ""}
             out.append(cur)

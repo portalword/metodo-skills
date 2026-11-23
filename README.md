@@ -59,6 +59,7 @@ Every time the checklist opens (or when the AI can't open a browser) it sends th
 | `/comentarios` · `/comments` | questions and answers |
 | `/marcar` `/metade` `/desmarcar 1.2` · `/check` `/half` `/uncheck 1.2` | mark done · half-done · not done |
 | `/comentar` · `/comment 1.2 text` | comment on an item |
+| `/detalhes` · `/details 1.2` | more details (replies are short by default) |
 
 In **Claude Code** they are real slash commands. In other tools, type them in the chat; the AI runs
 `kit/checklist/texto.py` and shows the result.

@@ -135,7 +135,7 @@ não permite redistribuir).
   Resumo: 2 defeitos — botão desalinhado; canto fora do padrão.
   <texto completo do crítico>
   ```
-- **No chat, depois de cada rodada,** mostre um resumo curto: passo, resultado, defeitos encontrados e o que foi corrigido.
+- **No chat, depois de cada rodada,** uma linha: passo, resultado e nº de defeitos (detalhe fica no histórico).
 - **Quem aprova** (releia `SUBAGENTS.json` na hora; ligar o botão **é** a aprovação do usuário dada por antecipação):
   - `opcoes.aprovaInterface: true` → crítico aprovou um subpasso de tela = aprovado: marque `[x]`, commit, fechamento e
     **comece o próximo na mesma resposta, sem perguntar**. `false` → mostre a ele e espere o "aprovado".

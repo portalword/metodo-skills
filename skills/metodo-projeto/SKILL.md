@@ -146,9 +146,11 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
   /comentarios — perguntas e respostas (/comments)
   /marcar 1.2 · /metade 1.2 · /desmarcar 1.2 (/check · /half · /uncheck)
   /comentar 1.2 texto (/comment)
+  /detalhes 1.2 — mais detalhes (/details)
   ```
   Comando em inglês = o mesmo em português (todo→falta, done→feitos, current→atual, future→futuro, comments→comentarios,
-  check→marcar, half→metade, uncheck→desmarcar, comment→comentar). `/abrir-checklist` = seção "Abrir" acima.
+  check→marcar, half→metade, uncheck→desmarcar, comment→comentar, details→detalhes). `/detalhes [passo]` não usa o
+  `texto.py`: a IA explica o passo (ou a última resposta) sem o limite de 8 linhas e depois volta ao curto. `/abrir-checklist` = seção "Abrir" acima.
   Quando ele digitar um desses, rode `python "<pasta desta skill>/kit/checklist/texto.py" "<pasta do projeto>" <comando> [id] [texto]`
   e mostre a saída como veio (em `/comentar`, depois responda ao comentário). No Claude Code eles já existem como
   comandos de verdade em `~/.claude/commands/`.
@@ -172,14 +174,15 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 4. **Ao fechar um subpasso (e sempre ao fechar um Passo):** releia o ROADMAP inteiro e o `CHECKLIST-COMENTARIOS.md`;
    liste em 1–3 linhas o que ficou `[ ]`/`[-]` em passos anteriores e comentários sem resposta, e pergunte se resolve
    agora ou segue (aprovado pelo crítico ou Testador: só liste e siga). Item que **ele desmarcou** é prioridade: pergunte o que ficou errado.
-5. **Fechamento de cada subpasso (sempre neste formato, em texto grande):**
+5. **Fechamento de cada subpasso (até 8 linhas, sempre assim):**
    ```
    ## 1.2 — Finalizado
-   **O que foi feito:** (resumo claro do que mudou)
+   **O que foi feito:** (até 3 linhas simples)
 
    ## Próximo: 1.3 — (nome)
-   **O que será feito:** (o que vou fazer)
+   **O que será feito:** (1 linha)
    ```
+   Só entra mais uma linha se houver erro, algo não testado ou pergunta. Mais que isso, ele pede com `/detalhes`.
 6. Ao terminar o ROADMAP, liste o que falta e mostre as ideias do `PLANOS-FUTUROS.md` para ele escolher.
 
 ## 4. Qualidade
@@ -223,7 +226,7 @@ campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTe
   comece o próximo. Enquanto o agente roda, termine com uma linha: `Testando 13.1 — sigo sozinho quando o resultado chegar`.
 - **Correção não vira laço:** no máximo 3 tentativas **ou** 15 min por defeito. Passou disso → pare, deixe a melhor versão,
   e mostre: o defeito, o que conseguiu (com números) e 2 saídas (ex.: aceitar como limite conhecido · tentar mais). Aceitar
-  é só o usuário; grave `aceito pelo usuário` no resumo. Nunca mude o teste para ele passar.
+  é só o usuário; grave o resultado `aceito`, com o motivo no resumo. Nunca mude o teste para ele passar.
 - **Trabalho longo não fica mudo:** antes de comando de mais de 2 min, diga em uma linha o que roda e quanto demora; rode em
   segundo plano e teste primeiro pequeno (poucos casos), o completo só no fim.
 - **Processos:** encerre só os que você abriu, pelo PID. Nunca `taskkill /IM` (fecha o programa do usuário junto).
@@ -235,10 +238,10 @@ campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTe
   na Entrega; grave `sem-teste`, marque `[x]` e siga. Nunca escreva "testado" ou "funciona": é **aprovado sem testar**.
   Na Entrega, liste os passos sem teste. Se depois ele desligar o botão, um teste posterior entra no histórico.
 - **Não libera** download, push, instalar, apagar, gastar, senha nem escolha entre opções: continua pedindo a ele.
-- **Histórico:** a cada rodada, acrescente em `TESTADOR-HISTORICO.md` o texto do Testador sem mudar nada (a aba mostra só
-  o último de cada passo, se `aprovado` ou `sem-teste`), e resuma no chat em uma linha:
+- **Histórico:** assim que **cada** resultado chegar, antes de qualquer outra coisa, acrescente em `TESTADOR-HISTORICO.md` o texto do Testador sem mudar nada (a aba mostra só
+  o último de cada passo, se `aprovado`, `sem-teste` ou `aceito`), e resuma no chat em uma linha:
   ```
-  ### 12.2 · DD/MM HH:MM · aprovado        (recusado · precisa-de-voce · sem-teste)
+  ### 12.2 · DD/MM HH:MM · aprovado        (recusado · precisa-de-voce · sem-teste · aceito)
   Resumo: 9 casos, 0 defeitos.
   <texto completo; em sem-teste: "Aprovado sem testar (botão ligado).">
   ```
@@ -269,9 +272,19 @@ campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTe
 - Respostas curtas, em português, direto ao ponto (ele se importa com tokens). Diga o que foi feito, o que não foi
   testado e o que precisa dele. Nunca diga "funciona" sem ter verificado. Erro seu: assuma em uma frase.
 - Decisões fixas ficam em arquivos do projeto (ROADMAP, `design/REGRAS.md`); preferências gerais dele, na memória da IA.
-- **Toda resposta organizada (inclusive fora do fechamento de subpasso):**
-  - Título curto em `##` dizendo do que se trata (ex.: `## Teste de modelos — resultado`).
-  - Blocos separados por `---`, cada um com subtítulo `###` ou rótulo em **negrito**.
-  - Itens em lista com `-`, uma ideia por linha; números e comparações em tabela.
-  - Sem narrar o processo ("enquanto baixa, vou…"): só o resultado final.
-  - No fim, separado por `---`: **Decisão / precisa de você:** em uma linha.
+- **Chat curto (vale para toda resposta):** o detalhe mora nos arquivos e no checklist; o chat só avisa.
+  - **Até 8 linhas.** Passe disso só em plano, perguntas, decisão difícil ou `/detalhes` (ou se ele pedir detalhe).
+  - Um título `##`; listas com `-`, uma ideia por linha; tabela só se comparar 3 ou mais coisas; `---` só antes do que
+    precisa dele. Sem subtítulos em resposta curta.
+  - **Não escreva:** processo, lista de testes que passaram, texto dos agentes, opções do `SUBAGENTS.json`, o que já foi
+    dito, nem "precisa de você: nada".
+  - Agente (crítico/Testador): uma linha por resultado, ex.: `13.2 · Testador recusou: 1 defeito (pedido em inglês)`.
+  - **Modelos fixos** (use o que couber, sem acrescentar blocos):
+    - Subpasso: o fechamento da §3.
+    - Agente rodando: `Testando 13.3 — sigo sozinho quando o resultado chegar`.
+    - Recusado: `13.3 · Crítico recusou: 2 defeitos. Corrigindo.`
+    - Pergunta ou erro: o que houve (1 linha) · opções (1 linha cada) · a pergunta.
+    - Explicação pedida: resposta direta na 1ª linha, até 5 itens.
+  - Números, commits, caminhos, portas e nomes internos só se ele precisar usar. Palavras simples.
+  - Nunca corte: erro, algo não testado, risco ou pergunta para ele.
+  - Entre ferramentas, fique calado; texto só para erro, demora ou mudança de rumo.
