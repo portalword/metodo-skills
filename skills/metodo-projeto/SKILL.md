@@ -93,9 +93,11 @@ parte do plano, não do código.
 - Ajuste pedido agora (ver acima) → vira subpasso no ROADMAP (ex.: `12.5`), com o "ok" dele.
 - Ideia para **depois** (ou que ele ainda não decidiu) → vai para `PLANOS-FUTUROS.md`, nunca direto para o código.
 
-**Fim do plano 1 → próximo plano:** quando todos os itens do ROADMAP estiverem `[x]`, pergunte se haverá um
-**Plano 2** completo (correções e mudanças). Se sim: mesmo roteiro (perguntas até "plano finalizado", ROADMAP com
-seção `# Plano 2`, linha `> Plano 2 aprovado em …`), puxando os itens do `PLANOS-FUTUROS.md` e o que ficou pendente.
+**Fim de um plano → próximo:** cada Contrato tem o seu Checklist (Contrato 1 ↔ Checklist 1, Contrato 2 ↔ Checklist 2…).
+Com tudo `[x]`, pergunte se haverá outro plano. Se sim: rode `texto.py "<projeto>" novo-plano` (guarda ROADMAP, comentários
+e históricos em `planos/N/` e cria o `ROADMAP.md` novo) e siga o mesmo roteiro, com **os passos começando em 1**, puxando o
+`PLANOS-FUTUROS.md`. Planos guardados são só leitura: abra só se precisar de algo de lá. Projeto antigo com `# Plano 2` no
+mesmo arquivo continua assim até terminar; não renumere.
 
 ## 1.1 PLANOS-FUTUROS.md (ideias para depois)
 
@@ -126,12 +128,12 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 - **Formato dos itens:** `- [ ] 1.2 texto` (o número é o id). Três estados:
   `[ ]` falta · `[x]` feito · `[-]` **pela metade** (amarelo: incompleto, parcial ou depende de outro passo — escreva no
   item o que falta, ex.: `- [-] 12.5 FPS (falta: temperatura da CPU)`).
-- **A IA marca** editando o `ROADMAP.md`; a página atualiza em 2 s e rola até o **item atual** (primeiro não feito).
+- **A IA marca** editando o `ROADMAP.md`; a página atualiza em 2 s e destaca o **item atual** (o botão de alvo leva até ele).
 - **Ele marca/desmarca** clicando (falta → feito → metade → falta), o que grava no `ROADMAP.md`.
 - **Comentários** dele por item vão para `CHECKLIST-COMENTARIOS.md` (blocos `### <id> · <data>`). A cada resposta sua,
   leia o arquivo; para cada bloco sem `[resolvido]`: responda no chat **e** escreva abaixo `> IA: <resposta curta>` e, se
   resolveu, `[resolvido]`. Pedido de ajuste vira subpasso; troca de função vai para `PLANOS-FUTUROS.md` (§1).
-- **Aba Subagents:** liga/desliga cada subagent e define limite de rodadas (ou sem limite); grava em `SUBAGENTS.json`.
+- **Aba Agentes:** liga/desliga cada subagent e define limite de rodadas (ou sem limite); grava em `SUBAGENTS.json`.
   Leia esse arquivo antes de chamar qualquer subagent listado ali (crítico visual: design-sistema §8; Testador: §4.1).
 - **Comandos no chat (sempre, com ou sem navegador):** ao abrir o checklist — ou se não conseguir abrir — mande esta
   mensagem e nada mais (sem explicar):
@@ -162,14 +164,16 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
    **Antes de cada subpasso, releia nesta ordem:** o `## Contrato` (fonte da verdade), o checklist do `ROADMAP.md` (onde
    paramos) e o `PLANOS-FUTUROS.md` (o que NÃO entra agora). Mensagens antigas do chat são só apoio; se brigarem com o
    Contrato, vale o Contrato.
-1. **Um subpasso por vez:** faça → confira "feito de verdade" (§4) → mostre → pare com "Sigo para o X?".
-   **Exceção — aprovação pelo crítico:** subpasso de tela com `aprovaInterface: true` (ou da Entrega com
-   `aprovaEntrega: true`) que o crítico aprovou **não para**: vale como o "aprovado" dele (item 2), mande o fechamento
-   (item 5) sem perguntar e já faça o próximo na mesma resposta (design-sistema §8, "Quem aprova").
-   O mesmo vale para subpasso com função aprovado pelo Testador com `aprovaFuncao: true` (§4.1). Subpasso com tela **e**
-   função só segue sozinho com os dois aprovando.
-2. **"Aprovado" / "próximo" / "seguir"** = marque `[x]`, faça um commit (`1.2 nome do subpasso`) e **já faça o próximo**
-   na mesma resposta. Não enviar para a internet (push) sem ele pedir.
+1. **Um subpasso por vez, nesta ordem (nunca em paralelo):**
+   **fazer → conferir (§4) → Crítico, se tem tela (design-sistema §8) → Testador, se tem função (§4.1) → fechar.**
+   - Recusou → o desenvolvimento corrige **tudo** → volta ao **mesmo tipo** de agente para confirmar → até aprovar ou bater
+     o limite.
+   - O Testador só entra depois do crítico aprovar. Se a correção do Testador mudar a tela, o crítico confere só essa mudança.
+   - Enquanto um agente analisa, **não mude os arquivos do projeto** nem comece o próximo.
+   - Todos os que se aplicam aprovaram com o botão ligado (`aprovaInterface` / `aprovaFuncao` / `aprovaEntrega`) = aprovado
+     pelo usuário: feche e **faça o próximo na mesma resposta, sem perguntar**. Senão, mostre e pare com "Sigo para o X?".
+2. **Fechar** (ou "aprovado" / "próximo" / "seguir") = marque `[x]` e faça **um** commit (`1.2 nome do subpasso`; sem commit
+   de "aguardando"). Não enviar para a internet (push) sem ele pedir.
 3. **Ajuste pedido no meio** → arrume antes de seguir. **Ideia nova** → `PLANOS-FUTUROS.md` (Contrato travado, §1).
 4. **Ao fechar um subpasso (e sempre ao fechar um Passo):** releia o ROADMAP inteiro e o `CHECKLIST-COMENTARIOS.md`;
    liste em 1–3 linhas o que ficou `[ ]`/`[-]` em passos anteriores e comentários sem resposta, e pergunte se resolve
@@ -206,45 +210,37 @@ mensagem clara se falhar, e mostrar o gasto quando houver cota/custo.
 **Dados que o programa guarda sozinho:** só vira "verdade" o que veio do próprio usuário; conteúdo de fundo (vídeo, áudio
 ambiente, páginas, arquivos de terceiros) não. O usuário consegue ver, editar e apagar o que foi guardado.
 
-## 4.1 Testador (subagent de funções)
+## 4.1 Agentes: regras do Crítico e do Testador
 
-Agente fixo `testador` (`~/.claude/agents/testador.md`). Config em `SUBAGENTS.json` → `testador` (aba Subagents); sem o
-campo: ativo, limite 3, `sonnet`, `testaEntrega` ligado, `aprovaFuncao` e `semTestes` desligados. Releia antes de cada uso.
+Config em `SUBAGENTS.json` (aba Agentes); sem o campo: ativo, limite 3, `sonnet`, aprovações e `semTestes` desligados,
+`testaEntrega` ligado. Releia antes de chamar **e** quando o resultado chegar. O crítico tem o resto na design-sistema §8.
 
-- **Quando:** fim de todo subpasso que cria ou muda função (só tela = só o crítico). `ativo: false` → não chame, não grave
-  histórico e espere o "aprovado" dele.
-- **Como chamar:** agente `testador`, `model` = o `modelo` da config, e o pedido é **exatamente** `Pasta: <caminho>` +
-  `Passo X.Y`. Proibido mandar explicação, motivo, o que mudou, como testar ou resultado anterior. Nova rodada = agente
-  novo (nunca continuar o anterior). Sem esse agente disponível: diga a ele; não teste no lugar dele.
-- **Status na aba (crítico e Testador), sempre:** `python "<pasta desta skill>/kit/checklist/texto.py" "<projeto>" agente
-  <critico-visual|testador> <estado> <passo>`: `analisando 13.2` logo antes de chamar · `corrigindo 13.2` ao receber recusa ·
-  `parado` ao aprovar, cair, interromper ou esperar o usuário. Ao retomar um projeto sem agente rodando, ponha `parado`.
-- **Desculpa não é aceita.** Recusado → corrija tudo e chame um novo, até aprovar ou bater o `limite` (0 = sem limite; ao
-  bater, pare e mostre o que sobrou). Acha o teste errado? Quem decide é o usuário. Nunca mexa em `~/.claude/testador/`.
-- **Quando o resultado chegar** (crítico ou Testador): releia o `SUBAGENTS.json` **antes** de fechar a resposta ou perguntar;
-  ele pode ter ligado o botão durante o teste. Botão ligado + aprovado → nenhuma pergunta nem botão de aprovação: marque e
-  comece o próximo. Enquanto o agente roda, termine com uma linha: `Testando 13.1 — sigo sozinho quando o resultado chegar`.
-- **Correção não vira laço:** no máximo 3 tentativas **ou** 15 min por defeito. Passou disso → pare, deixe a melhor versão,
-  e mostre: o defeito, o que conseguiu (com números) e 2 saídas (ex.: aceitar como limite conhecido · tentar mais). Aceitar
-  é só o usuário; grave o resultado `aceito`, com o motivo no resumo. Nunca mude o teste para ele passar.
-- **Trabalho longo não fica mudo:** antes de comando de mais de 2 min, diga em uma linha o que roda e quanto demora; rode em
-  segundo plano e teste primeiro pequeno (poucos casos), o completo só no fim.
-- **Processos:** encerre só os que você abriu, pelo PID. Nunca `taskkill /IM` (fecha o programa do usuário junto).
-- **`precisa-de-voce`** → pare e mostre o que só ele pode testar. Não é aprovação.
-- **Quem aprova:** `aprovaFuncao: true` → aprovado pelo Testador = aprovado por ele (§3, exceção). `false` → mostre e espere.
-- **Entrega:** `testaEntrega: true` → chame com `Entrega` (e os passos que estão "sem-teste": `Entrega · 12.2, 13.1`) no
-  lugar do teste rápido de funções. `false` → faça você o teste rápido. O fim da Entrega passa pelo usuário.
-- **`semTestes: true`** (só o usuário liga; com o Testador ativo, vence as outras opções) → não chame o Testador, nem
-  na Entrega; grave `sem-teste`, marque `[x]` e siga. Nunca escreva "testado" ou "funciona": é **aprovado sem testar**.
-  Na Entrega, liste os passos sem teste. Se depois ele desligar o botão, um teste posterior entra no histórico.
-- **Não libera** download, push, instalar, apagar, gastar, senha nem escolha entre opções: continua pedindo a ele.
-- **Histórico:** assim que **cada** resultado chegar, antes de qualquer outra coisa, acrescente em `TESTADOR-HISTORICO.md` o texto do Testador sem mudar nada (a aba mostra só
-  o último de cada passo, se `aprovado`, `sem-teste` ou `aceito`), e resuma no chat em uma linha:
+**Os dois:**
+- **Rodada 1** = completa. **Rodada 2 em diante** = agente novo que só **confirma**: confere a lista da última recusa (ele lê
+  no arquivo de histórico) e o que a correção mexeu. Defeito novo causado pela correção também recusa.
+- **O desenvolvedor nunca explica.** Sem motivo, desculpa, o que mudou ou como deveria ser. Só responde corrigindo. Acha o
+  agente errado? Quem decide é o usuário.
+- **Limite** (`limite`; 0 = sem limite) ou 15 min presos no mesmo defeito → pare e mostre o que sobrou com 2 saídas. Só o
+  usuário aceita (grave `aceito`). Nunca mude o teste para passar.
+- **Status, sempre:** `python "<pasta desta skill>/kit/checklist/texto.py" "<projeto>" agente <critico-visual|testador>
+  <analisando|corrigindo|parado> <passo>` — antes de chamar, ao receber recusa, e ao aprovar, cair ou esperar o usuário.
+- **Histórico, assim que o resultado chega:** texto do agente sem mudar, em `CRITICO-HISTORICO.md` / `TESTADOR-HISTORICO.md`:
   ```
   ### 12.2 · DD/MM HH:MM · aprovado        (recusado · precisa-de-voce · sem-teste · aceito)
   Resumo: 9 casos, 0 defeitos.
-  <texto completo; em sem-teste: "Aprovado sem testar (botão ligado).">
+  <texto completo>
   ```
+- **Chat:** uma linha ao chamar (`Testando 12.2 — sigo sozinho quando o resultado chegar`) e uma ao recusar.
+- **Não liberam** download, push, instalar, apagar, gastar, senha nem escolha entre opções.
+- **Processos:** encerre só os que você abriu, pelo PID; nunca por nome (`taskkill /IM`).
+
+**Testador** (agente fixo `testador`):
+- Pedido **exato**: `Pasta: <caminho>` + `Passo X.Y` (rodada 2+: `Passo X.Y · confirmar`). Não aparece na lista de agentes?
+  Diga a ele; não teste no lugar. Nunca mexa em `~/.claude/testador/`.
+- `precisa-de-voce` → pare e mostre o que só ele pode testar. `ativo: false` → não chame; espere o "aprovado" dele.
+- **Entrega** com `testaEntrega` → `Entrega` (+ passos sem teste: `Entrega · 12.2, 13.1`); desligado → teste rápido seu.
+- **`semTestes: true`** (vence o resto, com o Testador ativo) → não chame; grave `sem-teste` com "Aprovado sem testar (botão
+  ligado)." e siga. Nunca diga "testado". Na Entrega, liste os passos sem teste.
 
 ## 5. Segurança
 

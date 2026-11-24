@@ -4,6 +4,7 @@ Versão em texto do checklist ao vivo (para IAs que não abrem navegador).
 Uso:  python texto.py "<pasta do projeto>" <comando> [id] [texto]
 Comandos: checklist | falta | feitos | atual | design | futuro | comentarios
           agente <critico-visual|testador> <analisando|corrigindo|parado> [passo]
+          novo-plano (arquiva o plano terminado em planos/N e começa o próximo)
           marcar <id> | metade <id> | desmarcar <id> | comentar <id> <texto>
 Lê e escreve os mesmos arquivos da página (ROADMAP.md, CHECKLIST-COMENTARIOS.md, design/REGRAS.md, PLANOS-FUTUROS.md).
 """
@@ -32,6 +33,8 @@ def read(p):
 def items():
     out, sec = [], ""
     for i, l in enumerate(read(ROADMAP).splitlines()):
+        if re.match(r"^# Plano \d+\b", l):  # só o plano atual (o último)
+            out = []
         if l.startswith("#"):
             sec = l.lstrip("#").strip()
             continue
@@ -121,6 +124,27 @@ elif CMD == "agente" and len(ARGS) >= 2 and ARGS[0] in ("critico-visual", "testa
         json.dump(d, f, ensure_ascii=False)
     os.replace(p + ".tmp", p)
     print(*ARGS)
+elif CMD == "novo-plano":
+    its = items()
+    falta = [x["id"] for x in its if x["st"] not in "xX"]
+    base = os.path.join(ROOT, "planos")
+    nums = [int(d) for d in (os.listdir(base) if os.path.isdir(base) else []) if d.isdigit()]
+    marcas = re.findall(r"(?m)^# Plano (\d+)\b", read(ROADMAP))
+    n = int(marcas[-1]) if marcas else max(nums, default=0) + 1
+    dest = os.path.join(base, str(n))
+    if not its or falta:
+        print("Não arquivei: " + ("sem itens no ROADMAP.md" if not its else "faltam " + ", ".join(falta)))
+    elif os.path.exists(dest):
+        print("Não arquivei: já existe", dest)
+    else:
+        os.makedirs(dest)
+        for a in ("ROADMAP.md", "CHECKLIST-COMENTARIOS.md", "CRITICO-HISTORICO.md", "TESTADOR-HISTORICO.md"):
+            if os.path.exists(os.path.join(ROOT, a)):
+                os.replace(os.path.join(ROOT, a), os.path.join(dest, a))
+        partes = ["Ideia", "Prioridades", "Restrições", "Alvo", "Escopo", "Verificação", "Pronto quando", "Ambiente"]
+        with open(ROADMAP, "w", encoding="utf-8", newline="\n") as f:
+            f.write(f"# Plano {n + 1}\n\n## Contrato\n\n" + "".join(f"- **{p}:**\n" for p in partes))
+        print(f"Plano {n} guardado em planos/{n}. Plano {n + 1} começou em ROADMAP.md (contrato vazio).")
 elif CMD == "marcar" and ARGS:
     set_state(ARGS[0], "x")
 elif CMD == "metade" and ARGS:

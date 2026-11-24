@@ -19,7 +19,7 @@ NOTES = os.path.join(ROOT, "CHECKLIST-COMENTARIOS.md")
 REGRAS = os.path.join(ROOT, "design", "REGRAS.md")
 FUTUROS = os.path.join(ROOT, "PLANOS-FUTUROS.md")  # criado pela skill design-sistema
 SUBS = os.path.join(ROOT, "SUBAGENTS.json")  # config dos subagents (aba Subagents)
-SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 0, "modelo": "sonnet",  # limite 0 = sem limite
+SUBS_PADRAO = {"critico-visual": {"nome": "Crítico visual", "ativo": True, "limite": 3, "modelo": "sonnet",  # limite 0 = sem limite
                                    "opcoes": {"aprovaInterface": False, "aprovaEntrega": False}},
                "testador": {"nome": "Testador", "ativo": True, "limite": 3, "modelo": "sonnet",
                             "opcoes": {"aprovaFuncao": False, "testaEntrega": True, "semTestes": False}}}
@@ -38,10 +38,32 @@ def read(path):
         return ""
 
 
-def parse():
+def partir(texto, padrao):
+    """[(n, primeira linha, linhas)]: separa um ROADMAP nos títulos '# Plano N'."""
+    ls = texto.splitlines()
+    cortes = [(i, int(m.group(1))) for i, l in enumerate(ls) for m in [re.match(r"^# Plano (\d+)\b", l)] if m]
+    blocos = [(cortes[0][1] - 1 if cortes else padrao, 0)] + [(n, i) for i, n in cortes]
+    fins = [i for _, i in blocos[1:]] + [len(ls)]
+    out = [(n, ini, ls[ini:fim]) for (n, ini), fim in zip(blocos, fins)]
+    if cortes and not any(ITEM.match(l) or l.startswith("## ") for l in out[0][2]):
+        out = out[1:]
+    return out
+
+
+def planos():
+    """Todos os planos em ordem; o último é o atual (sempre no ROADMAP.md da raiz)."""
+    out, base = [], os.path.join(ROOT, "planos")
+    nums = sorted(int(d) for d in (os.listdir(base) if os.path.isdir(base) else []) if d.isdigit())
+    for n in nums:
+        out += partir(read(os.path.join(base, str(n), "ROADMAP.md")), n)
+    out += partir(read(ROADMAP), (nums[-1] if nums else 0) + 1)
+    return out
+
+
+def parse(ini, linhas):
     """Devolve seções com itens: [{titulo, itens:[{linha, feito, texto, id}]}]"""
     secs, cur = [], None
-    for i, line in enumerate(read(ROADMAP).splitlines()):
+    for i, line in enumerate(linhas, ini):
         if line.startswith("#"):
             cur = {"titulo": line.lstrip("#").strip(), "itens": []}
             secs.append(cur)
@@ -57,10 +79,10 @@ def parse():
     return [s for s in secs if s["itens"]]
 
 
-def contrato():
+def contrato(linhas):
     """Bloco '## Contrato' do ROADMAP: linhas '- **Parte:** texto' (ou '**Parte:** texto') + linha 'Plano aprovado em'."""
     partes, dentro, atual, aprovado = {}, False, None, ""
-    for line in read(ROADMAP).splitlines():
+    for line in linhas:
         if "aprovado em" in line.lower() and line.lstrip().startswith(">"):
             aprovado = line.lstrip("> ").strip()
         if line.startswith("## "):
@@ -155,11 +177,16 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, read(PAGE), "text/html")
         if self.path == "/estado":
             nome = os.path.basename(ROOT)
-            return self.send(200, json.dumps({"projeto": nome, "secoes": parse(), "notas": notes(), "mtime": os.path.getmtime(ROADMAP) if os.path.exists(ROADMAP) else 0}))
+            ps = planos(); n, ini, linhas = ps[-1]
+            return self.send(200, json.dumps({"projeto": nome, "plano": n, "planos": [p[0] for p in ps], "secoes": parse(ini, linhas), "notas": notes(), "mtime": os.path.getmtime(ROADMAP) if os.path.exists(ROADMAP) else 0}))
         if self.path == "/futuros":
             return self.send(200, json.dumps({"texto": read(FUTUROS)}))
-        if self.path == "/contrato":
-            return self.send(200, json.dumps(contrato()))
+        if self.path.startswith("/plano?n="):
+            alvo = self.path[9:]
+            for n, ini, linhas in reversed(planos()):
+                if str(n) == alvo:
+                    return self.send(200, json.dumps({"plano": n, "secoes": parse(ini, linhas), "contrato": contrato(linhas)}))
+            return self.send(404, "{}")
         if self.path == "/subagents":
             return self.send(200, json.dumps({"subs": subs(), "historicos": {k: historico(k) for k in HISTS}, "atual": atual()}))
         if self.path == "/design":

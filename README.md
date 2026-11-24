@@ -27,9 +27,9 @@ The two work as a pair: each one knows which rules belong to the other, and ther
 
 Your `ROADMAP.md` becomes a page in a side tab (`http://127.0.0.1:8765`) that both you and the AI use:
 
-- ✔ done · **–** half-done (yellow) · ☐ to do — click to cycle; the page opens on the **current** item.
+- ✔ done · **–** half-done (yellow) · ☐ to do — click to cycle; the **current** item is highlighted.
 - Comment on any item; the AI answers right below it.
-- Tabs: **All · To do · Done · Design** (palette, fonts and corners drawn from `design/REGRAS.md`) **· Future** (ideas for later).
+- Tabs: **Checklist · Contract · Agents · Design**. Each contract has its own checklist; older ones open read-only. Ideas for later show under the contract.
 - Light and dark mode.
 - Runs on plain Python (standard library only) and listens only on `127.0.0.1`.
 
@@ -40,7 +40,7 @@ Your `ROADMAP.md` becomes a page in a side tab (`http://127.0.0.1:8765`) that bo
 | **Visual critic** | Sees only screenshots, the contract and the design rules. Any defect = rejected. |
 | **Tester** (`testador`) | Gets only the project folder and the step. Uses the program in a copy, tries to break it and answers with proof. No excuses: the developer can only fix. |
 
-The **Subagents** tab sets on/off, round limit, model, self-approval, delivery test, and "approve everything without tests"
+The **Agents** tab sets on/off, round limit, model, self-approval, delivery test, and "approve everything without tests"
 (recorded as *approved without testing*).
 
 ## Chat commands
