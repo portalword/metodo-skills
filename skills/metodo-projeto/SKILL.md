@@ -218,6 +218,8 @@ Config em `SUBAGENTS.json` (aba Agentes); sem o campo: ativo, limite 3, `sonnet`
 **Os dois:**
 - **Rodada 1** = completa. **Rodada 2 em diante** = agente novo que só **confirma**: confere a lista da última recusa (ele lê
   no arquivo de histórico) e o que a correção mexeu. Defeito novo causado pela correção também recusa.
+- **Antes de chamar, sempre:** rode sozinho o comando de status com `analisando` e **espere a resposta**. Nunca chame o
+  agente no mesmo lote. Respondeu `DESLIGADO` (ou erro) → não chame.
 - **O desenvolvedor nunca explica.** Sem motivo, desculpa, o que mudou ou como deveria ser. Só responde corrigindo. Acha o
   agente errado? Quem decide é o usuário.
 - **Limite** (`limite`; 0 = sem limite) ou 15 min presos no mesmo defeito → pare e mostre o que sobrou com 2 saídas. Só o

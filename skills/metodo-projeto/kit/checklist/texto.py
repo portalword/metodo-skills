@@ -112,6 +112,14 @@ elif CMD in ("comentarios", "comentários"):
     t = read(NOTES)
     print(t.split("\n", 3)[-1].strip() if t.strip() else "Sem comentários.")
 elif CMD == "agente" and len(ARGS) >= 2 and ARGS[0] in ("critico-visual", "testador") and (ARGS[1] == "parado" or (ARGS[1] in ("analisando", "corrigindo") and len(ARGS) > 2)):
+    if ARGS[1] == "analisando":
+        try:
+            cfg = json.loads(read(os.path.join(ROOT, "SUBAGENTS.json")) or "{}")
+            ligado = cfg.get(ARGS[0], {}).get("ativo", True)
+        except (ValueError, AttributeError):
+            sys.exit("ERRO: SUBAGENTS.json ilegível; não chame o agente")
+        if not ligado:
+            sys.exit(f"DESLIGADO: não chame {ARGS[0]}")
     p = os.path.join(ROOT, "SUBAGENTS-ATUAL.json")
     try:
         d = json.loads(read(p) or "{}")
