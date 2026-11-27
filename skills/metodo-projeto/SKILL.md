@@ -123,7 +123,7 @@ rode Python e abra um navegador (Claude Code, Codex, DeepSeek Harness, Cursor…
 
 - **Abrir** (ao começar e ao retomar), em segundo plano:
   `python "<pasta desta skill>/kit/checklist/servidor.py" "<pasta do projeto>" 8765`
-  e abra `http://127.0.0.1:8765` no navegador lateral (ou peça para ele abrir). Porta ocupada → 8766, 8767…
+  e abra o endereço que ele imprimir (`Checklist: http://…`; porta ocupada, ele pula sozinho) no navegador lateral (ou peça para ele abrir).
   Escuta só em 127.0.0.1 e usa só a biblioteca padrão do Python.
 - **Formato dos itens:** `- [ ] 1.2 texto` (o número é o id). Três estados:
   `[ ]` falta · `[x]` feito · `[-]` **pela metade** (amarelo: incompleto, parcial ou depende de outro passo — escreva no

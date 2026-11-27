@@ -233,5 +233,15 @@ class H(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     if not os.path.exists(ROADMAP):
         print(f"Sem ROADMAP.md em {ROOT}")
-    print(f"Checklist: http://127.0.0.1:{PORT}  (projeto: {ROOT})")
-    ThreadingHTTPServer(("127.0.0.1", PORT), H).serve_forever()
+    class Srv(ThreadingHTTPServer):
+        allow_reuse_address = False  # no Windows, reuse deixa dois projetos na mesma porta
+    for porta in range(PORT, PORT + 30):
+        try:
+            srv = Srv(("127.0.0.1", porta), H)
+            break
+        except OSError:
+            continue
+    else:
+        sys.exit(f"Nenhuma porta livre entre {PORT} e {PORT + 29}")
+    print(f"Checklist: http://127.0.0.1:{porta}  (projeto: {ROOT})", flush=True)
+    srv.serve_forever()
